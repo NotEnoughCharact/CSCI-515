@@ -2,6 +2,9 @@
 #define GAME_ATTRIBUTE_CONSTANT_H
 #include "Constant.h"
 #include "Game_object.h"
+#include "Game_attribute_constant.h"
+#include "Scope_manager.h"
+#include "Symbol.h"
 
 class Game_attribute_constant : public Constant {
   public:

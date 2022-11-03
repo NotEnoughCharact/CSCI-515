@@ -9,7 +9,7 @@ class Constant : public Expression {
   public:
     Constant(GPL::Type enum_name) : intrinsic_type(enum_name) {}
     virtual const Constant*   evaluate() const final;
-    virtual int         as_int()    const;
+    virtual int         as_int()    const {throw intrinsic_type;}
     virtual double      as_double() const {throw intrinsic_type;}
     virtual std::string as_string() const {throw intrinsic_type;}
     virtual GPL::Type   type()      const final;
