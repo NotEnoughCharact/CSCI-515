@@ -39,4 +39,5 @@ std::string Game_attribute_constant::as_string() const
   }
   else
     throw type();
+    
 }
