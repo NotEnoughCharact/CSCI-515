@@ -1,0 +1,356 @@
+// Set up system variables
+int window_width = 1000;
+int window_height = 800;
+string window_title = "gpl second assignment";
+int user_int1 = 1; //for x direction
+int user_int2 = 1; //for y direction
+int temp;
+int i;
+int j;
+int move_amount = 10;
+int greenhit = 0;
+int total_balls = 20;
+int slow[total_balls];
+int med[total_balls];
+int fast[total_balls];
+int up[total_balls];
+int right[total_balls];
+
+forward animation slow_ball(circle c);
+forward animation med_ball(circle c);
+forward animation fast_ball(circle c);
+forward animation static(circle c);
+
+textbox tb(text="Game Over", red = 1.0, green = 1.0, blue = 1.0, x = 50, y = window_height/2, size = 1.0);
+circle main_circ(x = 50, y = 390, blue = 1.0, green = 0.0, red = 0.0, radius = 20, animation_block=static);
+circle slow_control(x=window_width+100, y = window_height+100, animation_block=slow_ball);
+circle med_control(x=window_width+100, y = window_height+100, animation_block=med_ball);
+circle fast_control(x=window_width+100, y = window_height+100, animation_block=fast_ball);
+circle circ[total_balls];
+
+initialization
+{
+  for(i = 0; i < total_balls; i++)
+  {
+    slow[i] = 0;
+    med[i] = 0;
+    fast[i] = 0;
+    up[i] = 1;
+    right[i] = 1;
+  }
+  for(i = 0; i < total_balls/2; i++)
+  {
+    circ[i].radius = 10;
+    circ[i].red = 1.0;
+    circ[i].blue = 0.0;
+    circ[i].green = 0.0;
+    circ[i].x = random(480)+500;
+    circ[i].y = random(780);
+    temp = random(3);
+    if(temp == 0)
+    {
+      //circ[i].animation_block = slow_ball;
+      slow[i] = 1;
+    }
+    if(temp == 1)
+    {
+      //circ[i].animation_block = med_ball;
+      med[i] = 1;
+    }
+    if(temp == 2)
+    {
+      //circ[i].animation_block = fast_ball;
+      fast[i] = 1;
+    }
+  }
+  for(i = total_balls/2; i < total_balls; i++)
+  {
+    circ[i].radius = 10;
+    circ[i].green = 1.0;
+    circ[i].red = 0.0;
+    circ[i].blue = 0.0;
+    circ[i].x = random(480)+500;
+    circ[i].y = random(780);
+    temp = random(3);
+    if(temp == 0)
+    {
+      //circ[i].animation_block = slow_ball;
+      slow[i] = 1;
+    }
+    if(temp == 1)
+    {
+      //circ[i].animation_block = med_ball;
+      med[i] = 1;
+    }
+    if(temp == 2)
+    {
+      //circ[i].animation_block = fast_ball;
+      fast[i] = 1;
+    }
+  }
+}
+
+on uparrow
+{
+  if(main_circ.y <= (window_height-5)-(2*main_circ.radius))
+  {
+    main_circ.y += move_amount;
+  }
+}
+on downarrow
+{
+  if(main_circ.y >= move_amount)
+  {
+    main_circ.y -= move_amount;
+  }
+}
+on rightarrow
+{
+  if(main_circ.x <= (window_width-5)-(2*main_circ.radius))
+  {
+    main_circ.x += move_amount;
+  }
+}
+on leftarrow
+{
+  if(main_circ.x >= move_amount)
+  {
+    main_circ.x -= move_amount;
+  }
+}
+
+animation slow_ball(circle c)
+{
+  for(i = 0; i < total_balls; i++)
+  {
+    if(slow[i] == 1)
+    {
+      if(circ[i].x >= window_width-(2*circ[i].radius))
+      {
+        right[i] = -1;
+      }
+      if(circ[i].y >= window_height-(2*circ[i].radius))
+      {
+        up[i] = -1;
+      }
+      if(circ[i].x <= 0)
+      {
+        right[i] = 1;
+      }
+      if(circ[i].y <= 0)
+      {
+        up[i] = 1;
+      }
+      circ[i].y += up[i]*1;
+      circ[i].x += right[i]*2;
+    }
+
+
+
+
+    if(circ[i] touches main_circ)
+    {
+      slow[i] = 0;
+      med[i] = 0;
+      fast[i] = 0;
+      if(circ[i].red == 1.0)
+      {
+        main_circ.radius -= 10;
+        if(main_circ.radius == 0)
+        {
+          for(j = 0; j < total_balls; j++)
+          {
+            circ[j].x = window_width+100;
+            circ[j].y = window_height+100;
+            slow[j] = 0;
+            med[j] = 0;
+            fast[j] = 0;
+          }
+          tb.green = 0.0;
+          tb.blue = 0.0;
+        }
+      }
+      else
+      {
+        greenhit++;
+        main_circ.radius += 10;
+        if(greenhit == total_balls/2)
+        {
+          for(j = 0; j < total_balls; j++)
+          {
+            circ[j].x = window_width+100;
+            circ[j].y = window_height+100;
+            slow[j] = 0;
+            med[j] = 0;
+            fast[j] = 0;
+          }
+          tb.green = 0.0;
+          tb.blue = 0.0;
+          main_circ.green = 1.0;
+          main_circ.red = 1.0;
+        }
+      }
+      circ[i].x = window_width+100;
+      circ[i].y = window_height+100;
+    }
+  }
+}
+animation med_ball(circle c)
+{
+  for(i = 0; i < total_balls; i++)
+  {
+    if(med[i] == 1)
+    {
+      if(circ[i].x >= window_width-(2*circ[i].radius))
+      {
+        right[i] = -1;
+      }
+      if(circ[i].y >= window_height-(2*circ[i].radius))
+      {
+        up[i] = -1;
+      }
+      if(circ[i].x <= 0)
+      {
+        right[i] = 1;
+      }
+      if(circ[i].y <= 0)
+      {
+        up[i] = 1;
+      }
+      circ[i].y += up[i]*2;
+      circ[i].x += right[i]*3;
+    }
+
+
+
+
+    if(circ[i] touches main_circ)
+    {
+      slow[i] = 0;
+      med[i] = 0;
+      fast[i] = 0;
+      if(circ[i].red == 1.0)
+      {
+        main_circ.radius -= 10;
+        if(main_circ.radius == 0)
+        {
+          for(j = 0; j < total_balls; j++)
+          {
+            circ[j].x = window_width+100;
+            circ[j].y = window_height+100;
+            slow[j] = 0;
+            med[j] = 0;
+            fast[j] = 0;
+          }
+          tb.green = 0.0;
+          tb.blue = 0.0;
+        }
+      }
+      else
+      {
+        greenhit++;
+        main_circ.radius += 10;
+        if(greenhit == total_balls/2)
+        {
+          for(j = 0; j < total_balls; j++)
+          {
+            circ[j].x = window_width+100;
+            circ[j].y = window_height+100;
+            slow[j] = 0;
+            med[j] = 0;
+            fast[j] = 0;
+          }
+          tb.green = 0.0;
+          tb.blue = 0.0;
+          main_circ.green = 1.0;
+          main_circ.red = 1.0;
+        }
+      }
+      circ[i].x = window_width+100;
+      circ[i].y = window_height+100;
+    }
+  }
+}
+animation fast_ball(circle c)
+{
+  for(i = 0; i < total_balls; i++)
+  {
+    if(fast[i] == 1)
+    {
+      if(circ[i].x >= window_width-(2*circ[i].radius))
+      {
+        right[i] = -1;
+      }
+      if(circ[i].y >= window_height-(2*circ[i].radius))
+      {
+        up[i] = -1;
+      }
+      if(circ[i].x <= 0)
+      {
+        right[i] = 1;
+      }
+      if(circ[i].y <= 0)
+      {
+        up[i] = 1;
+      }
+      circ[i].y += up[i]*3;
+      circ[i].x += right[i]*4;
+    }
+
+
+
+
+    if(circ[i] touches main_circ)
+    {
+      slow[i] = 0;
+      med[i] = 0;
+      fast[i] = 0;
+      if(circ[i].red == 1.0)
+      {
+        main_circ.radius -= 10;
+        if(main_circ.radius == 0)
+        {
+          for(j = 0; j < total_balls; j++)
+          {
+            circ[j].x = window_width+100;
+            circ[j].y = window_height+100;
+            slow[j] = 0;
+            med[j] = 0;
+            fast[j] = 0;
+          }
+          tb.green = 0.0;
+          tb.blue = 0.0;
+        }
+      }
+      else
+      {
+        greenhit++;
+        main_circ.radius += 10;
+        if(greenhit == total_balls/2)
+        {
+          for(j = 0; j < total_balls; j++)
+          {
+            circ[j].x = window_width+100;
+            circ[j].y = window_height+100;
+            slow[j] = 0;
+            med[j] = 0;
+            fast[j] = 0;
+          }
+          tb.green = 0.0;
+          tb.blue = 0.0;
+          main_circ.green = 1.0;
+          main_circ.red = 1.0;
+        }
+      }
+      circ[i].x = window_width+100;
+      circ[i].y = window_height+100;
+    }
+  }
+}
+
+animation static(circle c)
+{
+
+  c.x = c.x;
+  c.y = c.y;
+}

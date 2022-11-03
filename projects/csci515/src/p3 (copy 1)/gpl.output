@@ -1,0 +1,1199 @@
+Nonterminals useless in grammar
+
+    parameter_list
+    parameter
+    statement_or_block_of_statements
+    if_statement
+    for_statement
+    print_statement
+    exit_statement
+    assign_statement_or_empty
+    expression
+    level01
+    level02
+    level03
+    level04
+    level05
+    level06
+    level07
+    level08
+    primary_expression
+
+
+Terminals unused in grammar
+
+    "if"
+    "for"
+    "else"
+    "exit"
+    "print"
+    "true"
+    "false"
+    "["
+    "]"
+    ","
+    "="
+    "+="
+    "-="
+    "sin"
+    "cos"
+    "tan"
+    "asin"
+    "acos"
+    "atan"
+    "sqrt"
+    "abs"
+    "floor"
+    "random"
+    "touches"
+    "near"
+    "*"
+    "/"
+    "+"
+    "-"
+    "%"
+    "<"
+    ">"
+    "<="
+    ">="
+    "=="
+    "!="
+    "!"
+    "&&"
+    "||"
+    "int constant"
+    "double constant"
+    "string constant"
+    "error"
+
+
+Rules useless in grammar
+
+   67 variable_declaration: simple_type "identifier" "[" expression "]"
+
+   68 optional_initializer: "=" expression
+
+   69 object_declaration: object_type "identifier" "[" expression "]"
+
+   70 parameter_list_or_empty: "(" parameter_list ")"
+
+   71 parameter_list: parameter_list "," parameter
+   72               | parameter
+
+   73 parameter: "identifier" "=" expression
+
+   74 statement_or_block_of_statements: statement_block
+   75                                 | statement
+
+   76 statement: if_statement
+   77          | for_statement
+   78          | print_statement ";"
+   79          | exit_statement ";"
+
+   80 if_statement: "if" "(" expression ")" statement_or_block_of_statements
+   81             | "if" "(" expression ")" statement_or_block_of_statements "else" statement_or_block_of_statements
+
+   82 for_statement: "for" "(" assign_statement_or_empty ";" expression ";" assign_statement_or_empty ")" statement_or_block_of_statements
+
+   83 print_statement: "print" "(" expression ")"
+
+   84 exit_statement: "exit" "(" expression ")"
+
+   85 assign_statement_or_empty: assign_statement
+   86                          | ε
+
+   87 assign_statement: variable "=" expression
+   88                 | variable "+=" expression
+   89                 | variable "-=" expression
+
+   90 variable: "identifier" "[" expression "]"
+   91         | "identifier" "[" expression "]" "." "identifier"
+
+   92 expression: level01
+
+   93 level01: level02
+   94        | level01 "||" level02
+
+   95 level02: level03
+   96        | level02 "&&" level03
+
+   97 level03: level04
+   98        | level03 "<=" level04
+   99        | level03 ">=" level04
+  100        | level03 "<" level04
+  101        | level03 ">" level04
+
+  102 level04: level05
+  103        | level04 "==" level05
+  104        | level04 "!=" level05
+
+  105 level05: level06
+  106        | level05 "+" level06
+  107        | level05 "-" level06
+
+  108 level06: level07
+  109        | level06 "*" level07
+  110        | level06 "/" level07
+  111        | level06 "%" level07
+
+  112 level07: level08
+  113        | "-" level07
+  114        | "!" level07
+
+  115 level08: expression
+  116        | level08 "near" expression
+  117        | level08 "touches" expression
+
+  118 primary_expression: "sin" "(" expression ")"
+  119                   | "cos" "(" expression ")"
+  120                   | "tan" "(" expression ")"
+  121                   | "asin" "(" expression ")"
+  122                   | "acos" "(" expression ")"
+  123                   | "atan" "(" expression ")"
+  124                   | "sqrt" "(" expression ")"
+  125                   | "abs" "(" expression ")"
+  126                   | "floor" "(" expression ")"
+  127                   | "random" "(" expression ")"
+  128                   | "(" expression ")"
+  129                   | variable
+  130                   | "int constant"
+  131                   | "true"
+  132                   | "false"
+  133                   | "double constant"
+  134                   | "string constant"
+
+
+Grammar
+
+    0 $accept: program $end
+
+    1 program: declaration_list block_list
+
+    2 declaration_list: declaration_list declaration
+    3                 | ε
+
+    4 declaration: variable_declaration ";"
+    5            | object_declaration ";"
+    6            | forward_declaration ";"
+
+    7 variable_declaration: simple_type "identifier" optional_initializer
+
+    8 simple_type: "int"
+    9            | "double"
+   10            | "string"
+
+   11 optional_initializer: ε
+
+   12 object_declaration: object_type "identifier" parameter_list_or_empty
+
+   13 object_type: "triangle"
+   14            | "pixmap"
+   15            | "circle"
+   16            | "rectangle"
+   17            | "textbox"
+
+   18 parameter_list_or_empty: "(" ")"
+   19                        | ε
+
+   20 block_list: block_list block
+   21           | ε
+
+   22 block: initialization_block
+   23      | termination_block
+   24      | animation_block
+   25      | on_block
+
+   26 initialization_block: "initialization" statement_block
+
+   27 termination_block: "termination" statement_block
+
+   28 forward_declaration: "forward" "animation" "identifier" "(" animation_parameter ")"
+
+   29 animation_parameter: object_type "identifier"
+   30                    | object_type
+
+   31 animation_block: animation_declaration statement_block
+
+   32 animation_declaration: "animation" "identifier" "(" object_type "identifier" ")"
+
+   33 on_block: "on" keystroke statement_block
+
+   34 keystroke: "space"
+   35          | "uparrow"
+   36          | "downarrow"
+   37          | "leftarrow"
+   38          | "rightarrow"
+   39          | "leftmouse_down"
+   40          | "middlemouse_down"
+   41          | "rightmouse_down"
+   42          | "leftmouse_up"
+   43          | "middlemouse_up"
+   44          | "rightmouse_up"
+   45          | "mouse_move"
+   46          | "mouse_drag"
+   47          | "akey"
+   48          | "skey"
+   49          | "dkey"
+   50          | "fkey"
+   51          | "hkey"
+   52          | "jkey"
+   53          | "kkey"
+   54          | "lkey"
+   55          | "wkey"
+   56          | "zkey"
+   57          | "f1"
+
+   58 statement_block: "{" statement_list "}"
+   59                | "{" "}"
+
+   60 statement_list: statement_list statement
+   61               | statement
+
+   62 statement: assign_statement ";"
+
+   63 assign_statement: variable "++"
+   64                 | variable "--"
+
+   65 variable: "identifier"
+   66         | "identifier" "." "identifier"
+
+
+Terminals, with rules where they appear
+
+    $end (0) 0
+    error (256)
+    "int" <union_gpl_type> (258) 8
+    "double" <union_gpl_type> (259) 9
+    "string" <union_gpl_type> (260) 10
+    "triangle" (261) 13
+    "pixmap" (262) 14
+    "circle" (263) 15
+    "rectangle" (264) 16
+    "textbox" (265) 17
+    "forward" (266) 28
+    "initialization" (267) 26
+    "termination" (268) 27
+    "on" (269) 33
+    "animation" (270) 28 32
+    "if" (271)
+    "for" (272)
+    "else" (273)
+    "exit" <union_int> (274)
+    "print" <union_string> (275)
+    "true" (276)
+    "false" (277)
+    "space" (278) 34
+    "leftarrow" (279) 37
+    "rightarrow" (280) 38
+    "uparrow" (281) 35
+    "downarrow" (282) 36
+    "leftmouse_down" (283) 39
+    "middlemouse_down" (284) 40
+    "rightmouse_down" (285) 41
+    "leftmouse_up" (286) 42
+    "middlemouse_up" (287) 43
+    "rightmouse_up" (288) 44
+    "mouse_move" (289) 45
+    "mouse_drag" (290) 46
+    "f1" (291) 57
+    "akey" (292) 47
+    "skey" (293) 48
+    "dkey" (294) 49
+    "fkey" (295) 50
+    "hkey" (296) 51
+    "jkey" (297) 52
+    "kkey" (298) 53
+    "lkey" (299) 54
+    "wkey" (300) 55
+    "zkey" (301) 56
+    "(" (302) 18 28 32
+    ")" (303) 18 28 32
+    "{" (304) 58 59
+    "}" (305) 58 59
+    "[" (306)
+    "]" (307)
+    ";" (308) 4 5 6 62
+    "," (309)
+    "." (310) 66
+    "=" (311)
+    "+=" (312)
+    "-=" (313)
+    "++" (314) 63
+    "--" (315) 64
+    "sin" (316)
+    "cos" (317)
+    "tan" (318)
+    "asin" (319)
+    "acos" (320)
+    "atan" (321)
+    "sqrt" (322)
+    "abs" (323)
+    "floor" (324)
+    "random" (325)
+    "touches" (326)
+    "near" (327)
+    "*" (328)
+    "/" (329)
+    "+" (330)
+    "-" (331)
+    "%" (332)
+    "<" (333)
+    ">" (334)
+    "<=" (335)
+    ">=" (336)
+    "==" (337)
+    "!=" (338)
+    "!" (339)
+    "&&" (340)
+    "||" (341)
+    "int constant" <union_int> (342)
+    "double constant" <union_double> (343)
+    "string constant" <union_string> (344)
+    "identifier" <union_string> (345) 7 12 28 29 32 65 66
+    "error" (346)
+    UNARY_OPS (347)
+    T_IF_NO_ELSE (348)
+
+
+Nonterminals, with rules where they appear
+
+    $accept (94)
+        on left: 0
+    program (95)
+        on left: 1
+        on right: 0
+    declaration_list (96)
+        on left: 2 3
+        on right: 1 2
+    declaration (97)
+        on left: 4 5 6
+        on right: 2
+    variable_declaration (98)
+        on left: 7
+        on right: 4
+    simple_type <union_gpl_type> (99)
+        on left: 8 9 10
+        on right: 7
+    optional_initializer <union_expression_ptr> (100)
+        on left: 11
+        on right: 7
+    object_declaration (101)
+        on left: 12
+        on right: 5
+    object_type (102)
+        on left: 13 14 15 16 17
+        on right: 12 29 30 32
+    parameter_list_or_empty (103)
+        on left: 18 19
+        on right: 12
+    block_list (104)
+        on left: 20 21
+        on right: 1 20
+    block (105)
+        on left: 22 23 24 25
+        on right: 20
+    initialization_block (106)
+        on left: 26
+        on right: 22
+    termination_block (107)
+        on left: 27
+        on right: 23
+    forward_declaration (108)
+        on left: 28
+        on right: 6
+    animation_parameter (109)
+        on left: 29 30
+        on right: 28
+    animation_block (110)
+        on left: 31
+        on right: 24
+    animation_declaration (111)
+        on left: 32
+        on right: 31
+    on_block (112)
+        on left: 33
+        on right: 25
+    keystroke (113)
+        on left: 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57
+        on right: 33
+    statement_block (114)
+        on left: 58 59
+        on right: 26 27 31 33
+    statement_list (115)
+        on left: 60 61
+        on right: 58 60
+    statement (116)
+        on left: 62
+        on right: 60 61
+    assign_statement (117)
+        on left: 63 64
+        on right: 62
+    variable <union_variable_ptr> (118)
+        on left: 65 66
+        on right: 63 64
+
+
+State 0
+
+    0 $accept: • program $end
+
+    $default  reduce using rule 3 (declaration_list)
+
+    program           go to state 1
+    declaration_list  go to state 2
+
+
+State 1
+
+    0 $accept: program • $end
+
+    $end  shift, and go to state 3
+
+
+State 2
+
+    1 program: declaration_list • block_list
+    2 declaration_list: declaration_list • declaration
+
+    "int"        shift, and go to state 4
+    "double"     shift, and go to state 5
+    "string"     shift, and go to state 6
+    "triangle"   shift, and go to state 7
+    "pixmap"     shift, and go to state 8
+    "circle"     shift, and go to state 9
+    "rectangle"  shift, and go to state 10
+    "textbox"    shift, and go to state 11
+    "forward"    shift, and go to state 12
+
+    $default  reduce using rule 21 (block_list)
+
+    declaration           go to state 13
+    variable_declaration  go to state 14
+    simple_type           go to state 15
+    object_declaration    go to state 16
+    object_type           go to state 17
+    block_list            go to state 18
+    forward_declaration   go to state 19
+
+
+State 3
+
+    0 $accept: program $end •
+
+    $default  accept
+
+
+State 4
+
+    8 simple_type: "int" •
+
+    $default  reduce using rule 8 (simple_type)
+
+
+State 5
+
+    9 simple_type: "double" •
+
+    $default  reduce using rule 9 (simple_type)
+
+
+State 6
+
+   10 simple_type: "string" •
+
+    $default  reduce using rule 10 (simple_type)
+
+
+State 7
+
+   13 object_type: "triangle" •
+
+    $default  reduce using rule 13 (object_type)
+
+
+State 8
+
+   14 object_type: "pixmap" •
+
+    $default  reduce using rule 14 (object_type)
+
+
+State 9
+
+   15 object_type: "circle" •
+
+    $default  reduce using rule 15 (object_type)
+
+
+State 10
+
+   16 object_type: "rectangle" •
+
+    $default  reduce using rule 16 (object_type)
+
+
+State 11
+
+   17 object_type: "textbox" •
+
+    $default  reduce using rule 17 (object_type)
+
+
+State 12
+
+   28 forward_declaration: "forward" • "animation" "identifier" "(" animation_parameter ")"
+
+    "animation"  shift, and go to state 20
+
+
+State 13
+
+    2 declaration_list: declaration_list declaration •
+
+    $default  reduce using rule 2 (declaration_list)
+
+
+State 14
+
+    4 declaration: variable_declaration • ";"
+
+    ";"  shift, and go to state 21
+
+
+State 15
+
+    7 variable_declaration: simple_type • "identifier" optional_initializer
+
+    "identifier"  shift, and go to state 22
+
+
+State 16
+
+    5 declaration: object_declaration • ";"
+
+    ";"  shift, and go to state 23
+
+
+State 17
+
+   12 object_declaration: object_type • "identifier" parameter_list_or_empty
+
+    "identifier"  shift, and go to state 24
+
+
+State 18
+
+    1 program: declaration_list block_list •
+   20 block_list: block_list • block
+
+    "initialization"  shift, and go to state 25
+    "termination"     shift, and go to state 26
+    "on"              shift, and go to state 27
+    "animation"       shift, and go to state 28
+
+    $default  reduce using rule 1 (program)
+
+    block                  go to state 29
+    initialization_block   go to state 30
+    termination_block      go to state 31
+    animation_block        go to state 32
+    animation_declaration  go to state 33
+    on_block               go to state 34
+
+
+State 19
+
+    6 declaration: forward_declaration • ";"
+
+    ";"  shift, and go to state 35
+
+
+State 20
+
+   28 forward_declaration: "forward" "animation" • "identifier" "(" animation_parameter ")"
+
+    "identifier"  shift, and go to state 36
+
+
+State 21
+
+    4 declaration: variable_declaration ";" •
+
+    $default  reduce using rule 4 (declaration)
+
+
+State 22
+
+    7 variable_declaration: simple_type "identifier" • optional_initializer
+
+    $default  reduce using rule 11 (optional_initializer)
+
+    optional_initializer  go to state 37
+
+
+State 23
+
+    5 declaration: object_declaration ";" •
+
+    $default  reduce using rule 5 (declaration)
+
+
+State 24
+
+   12 object_declaration: object_type "identifier" • parameter_list_or_empty
+
+    "("  shift, and go to state 38
+
+    $default  reduce using rule 19 (parameter_list_or_empty)
+
+    parameter_list_or_empty  go to state 39
+
+
+State 25
+
+   26 initialization_block: "initialization" • statement_block
+
+    "{"  shift, and go to state 40
+
+    statement_block  go to state 41
+
+
+State 26
+
+   27 termination_block: "termination" • statement_block
+
+    "{"  shift, and go to state 40
+
+    statement_block  go to state 42
+
+
+State 27
+
+   33 on_block: "on" • keystroke statement_block
+
+    "space"             shift, and go to state 43
+    "leftarrow"         shift, and go to state 44
+    "rightarrow"        shift, and go to state 45
+    "uparrow"           shift, and go to state 46
+    "downarrow"         shift, and go to state 47
+    "leftmouse_down"    shift, and go to state 48
+    "middlemouse_down"  shift, and go to state 49
+    "rightmouse_down"   shift, and go to state 50
+    "leftmouse_up"      shift, and go to state 51
+    "middlemouse_up"    shift, and go to state 52
+    "rightmouse_up"     shift, and go to state 53
+    "mouse_move"        shift, and go to state 54
+    "mouse_drag"        shift, and go to state 55
+    "f1"                shift, and go to state 56
+    "akey"              shift, and go to state 57
+    "skey"              shift, and go to state 58
+    "dkey"              shift, and go to state 59
+    "fkey"              shift, and go to state 60
+    "hkey"              shift, and go to state 61
+    "jkey"              shift, and go to state 62
+    "kkey"              shift, and go to state 63
+    "lkey"              shift, and go to state 64
+    "wkey"              shift, and go to state 65
+    "zkey"              shift, and go to state 66
+
+    keystroke  go to state 67
+
+
+State 28
+
+   32 animation_declaration: "animation" • "identifier" "(" object_type "identifier" ")"
+
+    "identifier"  shift, and go to state 68
+
+
+State 29
+
+   20 block_list: block_list block •
+
+    $default  reduce using rule 20 (block_list)
+
+
+State 30
+
+   22 block: initialization_block •
+
+    $default  reduce using rule 22 (block)
+
+
+State 31
+
+   23 block: termination_block •
+
+    $default  reduce using rule 23 (block)
+
+
+State 32
+
+   24 block: animation_block •
+
+    $default  reduce using rule 24 (block)
+
+
+State 33
+
+   31 animation_block: animation_declaration • statement_block
+
+    "{"  shift, and go to state 40
+
+    statement_block  go to state 69
+
+
+State 34
+
+   25 block: on_block •
+
+    $default  reduce using rule 25 (block)
+
+
+State 35
+
+    6 declaration: forward_declaration ";" •
+
+    $default  reduce using rule 6 (declaration)
+
+
+State 36
+
+   28 forward_declaration: "forward" "animation" "identifier" • "(" animation_parameter ")"
+
+    "("  shift, and go to state 70
+
+
+State 37
+
+    7 variable_declaration: simple_type "identifier" optional_initializer •
+
+    $default  reduce using rule 7 (variable_declaration)
+
+
+State 38
+
+   18 parameter_list_or_empty: "(" • ")"
+
+    ")"  shift, and go to state 71
+
+
+State 39
+
+   12 object_declaration: object_type "identifier" parameter_list_or_empty •
+
+    $default  reduce using rule 12 (object_declaration)
+
+
+State 40
+
+   58 statement_block: "{" • statement_list "}"
+   59                | "{" • "}"
+
+    "}"           shift, and go to state 72
+    "identifier"  shift, and go to state 73
+
+    statement_list    go to state 74
+    statement         go to state 75
+    assign_statement  go to state 76
+    variable          go to state 77
+
+
+State 41
+
+   26 initialization_block: "initialization" statement_block •
+
+    $default  reduce using rule 26 (initialization_block)
+
+
+State 42
+
+   27 termination_block: "termination" statement_block •
+
+    $default  reduce using rule 27 (termination_block)
+
+
+State 43
+
+   34 keystroke: "space" •
+
+    $default  reduce using rule 34 (keystroke)
+
+
+State 44
+
+   37 keystroke: "leftarrow" •
+
+    $default  reduce using rule 37 (keystroke)
+
+
+State 45
+
+   38 keystroke: "rightarrow" •
+
+    $default  reduce using rule 38 (keystroke)
+
+
+State 46
+
+   35 keystroke: "uparrow" •
+
+    $default  reduce using rule 35 (keystroke)
+
+
+State 47
+
+   36 keystroke: "downarrow" •
+
+    $default  reduce using rule 36 (keystroke)
+
+
+State 48
+
+   39 keystroke: "leftmouse_down" •
+
+    $default  reduce using rule 39 (keystroke)
+
+
+State 49
+
+   40 keystroke: "middlemouse_down" •
+
+    $default  reduce using rule 40 (keystroke)
+
+
+State 50
+
+   41 keystroke: "rightmouse_down" •
+
+    $default  reduce using rule 41 (keystroke)
+
+
+State 51
+
+   42 keystroke: "leftmouse_up" •
+
+    $default  reduce using rule 42 (keystroke)
+
+
+State 52
+
+   43 keystroke: "middlemouse_up" •
+
+    $default  reduce using rule 43 (keystroke)
+
+
+State 53
+
+   44 keystroke: "rightmouse_up" •
+
+    $default  reduce using rule 44 (keystroke)
+
+
+State 54
+
+   45 keystroke: "mouse_move" •
+
+    $default  reduce using rule 45 (keystroke)
+
+
+State 55
+
+   46 keystroke: "mouse_drag" •
+
+    $default  reduce using rule 46 (keystroke)
+
+
+State 56
+
+   57 keystroke: "f1" •
+
+    $default  reduce using rule 57 (keystroke)
+
+
+State 57
+
+   47 keystroke: "akey" •
+
+    $default  reduce using rule 47 (keystroke)
+
+
+State 58
+
+   48 keystroke: "skey" •
+
+    $default  reduce using rule 48 (keystroke)
+
+
+State 59
+
+   49 keystroke: "dkey" •
+
+    $default  reduce using rule 49 (keystroke)
+
+
+State 60
+
+   50 keystroke: "fkey" •
+
+    $default  reduce using rule 50 (keystroke)
+
+
+State 61
+
+   51 keystroke: "hkey" •
+
+    $default  reduce using rule 51 (keystroke)
+
+
+State 62
+
+   52 keystroke: "jkey" •
+
+    $default  reduce using rule 52 (keystroke)
+
+
+State 63
+
+   53 keystroke: "kkey" •
+
+    $default  reduce using rule 53 (keystroke)
+
+
+State 64
+
+   54 keystroke: "lkey" •
+
+    $default  reduce using rule 54 (keystroke)
+
+
+State 65
+
+   55 keystroke: "wkey" •
+
+    $default  reduce using rule 55 (keystroke)
+
+
+State 66
+
+   56 keystroke: "zkey" •
+
+    $default  reduce using rule 56 (keystroke)
+
+
+State 67
+
+   33 on_block: "on" keystroke • statement_block
+
+    "{"  shift, and go to state 40
+
+    statement_block  go to state 78
+
+
+State 68
+
+   32 animation_declaration: "animation" "identifier" • "(" object_type "identifier" ")"
+
+    "("  shift, and go to state 79
+
+
+State 69
+
+   31 animation_block: animation_declaration statement_block •
+
+    $default  reduce using rule 31 (animation_block)
+
+
+State 70
+
+   28 forward_declaration: "forward" "animation" "identifier" "(" • animation_parameter ")"
+
+    "triangle"   shift, and go to state 7
+    "pixmap"     shift, and go to state 8
+    "circle"     shift, and go to state 9
+    "rectangle"  shift, and go to state 10
+    "textbox"    shift, and go to state 11
+
+    object_type          go to state 80
+    animation_parameter  go to state 81
+
+
+State 71
+
+   18 parameter_list_or_empty: "(" ")" •
+
+    $default  reduce using rule 18 (parameter_list_or_empty)
+
+
+State 72
+
+   59 statement_block: "{" "}" •
+
+    $default  reduce using rule 59 (statement_block)
+
+
+State 73
+
+   65 variable: "identifier" •
+   66         | "identifier" • "." "identifier"
+
+    "."  shift, and go to state 82
+
+    $default  reduce using rule 65 (variable)
+
+
+State 74
+
+   58 statement_block: "{" statement_list • "}"
+   60 statement_list: statement_list • statement
+
+    "}"           shift, and go to state 83
+    "identifier"  shift, and go to state 73
+
+    statement         go to state 84
+    assign_statement  go to state 76
+    variable          go to state 77
+
+
+State 75
+
+   61 statement_list: statement •
+
+    $default  reduce using rule 61 (statement_list)
+
+
+State 76
+
+   62 statement: assign_statement • ";"
+
+    ";"  shift, and go to state 85
+
+
+State 77
+
+   63 assign_statement: variable • "++"
+   64                 | variable • "--"
+
+    "++"  shift, and go to state 86
+    "--"  shift, and go to state 87
+
+
+State 78
+
+   33 on_block: "on" keystroke statement_block •
+
+    $default  reduce using rule 33 (on_block)
+
+
+State 79
+
+   32 animation_declaration: "animation" "identifier" "(" • object_type "identifier" ")"
+
+    "triangle"   shift, and go to state 7
+    "pixmap"     shift, and go to state 8
+    "circle"     shift, and go to state 9
+    "rectangle"  shift, and go to state 10
+    "textbox"    shift, and go to state 11
+
+    object_type  go to state 88
+
+
+State 80
+
+   29 animation_parameter: object_type • "identifier"
+   30                    | object_type •
+
+    "identifier"  shift, and go to state 89
+
+    $default  reduce using rule 30 (animation_parameter)
+
+
+State 81
+
+   28 forward_declaration: "forward" "animation" "identifier" "(" animation_parameter • ")"
+
+    ")"  shift, and go to state 90
+
+
+State 82
+
+   66 variable: "identifier" "." • "identifier"
+
+    "identifier"  shift, and go to state 91
+
+
+State 83
+
+   58 statement_block: "{" statement_list "}" •
+
+    $default  reduce using rule 58 (statement_block)
+
+
+State 84
+
+   60 statement_list: statement_list statement •
+
+    $default  reduce using rule 60 (statement_list)
+
+
+State 85
+
+   62 statement: assign_statement ";" •
+
+    $default  reduce using rule 62 (statement)
+
+
+State 86
+
+   63 assign_statement: variable "++" •
+
+    $default  reduce using rule 63 (assign_statement)
+
+
+State 87
+
+   64 assign_statement: variable "--" •
+
+    $default  reduce using rule 64 (assign_statement)
+
+
+State 88
+
+   32 animation_declaration: "animation" "identifier" "(" object_type • "identifier" ")"
+
+    "identifier"  shift, and go to state 92
+
+
+State 89
+
+   29 animation_parameter: object_type "identifier" •
+
+    $default  reduce using rule 29 (animation_parameter)
+
+
+State 90
+
+   28 forward_declaration: "forward" "animation" "identifier" "(" animation_parameter ")" •
+
+    $default  reduce using rule 28 (forward_declaration)
+
+
+State 91
+
+   66 variable: "identifier" "." "identifier" •
+
+    $default  reduce using rule 66 (variable)
+
+
+State 92
+
+   32 animation_declaration: "animation" "identifier" "(" object_type "identifier" • ")"
+
+    ")"  shift, and go to state 93
+
+
+State 93
+
+   32 animation_declaration: "animation" "identifier" "(" object_type "identifier" ")" •
+
+    $default  reduce using rule 32 (animation_declaration)

@@ -1,0 +1,11 @@
+each terminal token returned by the scanner has a semantic value associated with it.
+we may us or ignore the semantic value at our discretion
+
+
+In the flex-generated scanner:
+const char* yytext; //this character array is of the text that actually matched the regular expression
+int yylval; //his integer holds the semantic value. It will ultimately be more complicated than
+a simple integer. But for the RPN calculator, a simple integer satisfies. 
+
+
+CHARACTER Q

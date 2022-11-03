@@ -1,0 +1,2 @@
+flex {flex file name}
+g++ -std=c++17 lex.yy.c

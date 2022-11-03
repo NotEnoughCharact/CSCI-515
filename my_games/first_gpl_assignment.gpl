@@ -1,0 +1,115 @@
+// Set up system variables
+int window_width = 500;
+int window_height = 300;
+string window_title = "gpl first assignment";
+int num_periods = 1;
+int user_int1 = 1; //for x direction
+int user_int2 = 1; //for y direction
+double sin_x_pos;
+int sin_y_pos;
+int i;
+int counter = 49;
+int temp_x;
+int temp_y;
+int first = 1;
+
+
+forward animation add_ball(circle c);
+forward animation sinewave(circle c);
+
+textbox tb(text = "Current period: " + num_periods, red = 0.0, green = 0.0, blue = 1.0, x = 10, y = 10);
+circle c[50];
+initialization
+{
+  for(i = 0; i < 50; i++)
+  {
+    c[i].radius = 15;
+    c[i].blue = 1-(i*0.02);
+    c[i].red = 1-(i*0.02);
+    c[i].green = 1-(i*0.02);
+  }
+  c[49].animation_block=sinewave;
+}
+on rightarrow
+{
+  num_periods++;
+  tb.text = "Current period: " + num_periods;
+}
+on leftarrow
+{
+  if(num_periods > 0)
+  {
+    num_periods--;
+    tb.text = "Current period: " + num_periods;
+  }
+}
+
+animation sinewave(circle circ)
+{
+
+
+  sin_y_pos = floor((window_height-30)/2.0*(sin(num_periods*360.0*circ.x/(window_width-30))))+((window_height-30)/2);
+  if(circ.x >= 470)
+  {
+    user_int1 = -1;
+  }
+  if(circ.y >= 270)
+  {
+    user_int2 = -1;
+  }
+  if(circ.x <= 0)
+  {
+    user_int1 = 1;
+  }
+  if(circ.y <= 0)
+  {
+    user_int2 = 1;
+  }
+
+  circ.y = sin_y_pos;
+  circ.x += user_int1*2;
+
+
+
+  counter--;
+  if(counter == -1)
+  {
+    counter = 48;
+  }
+
+
+  for(i = 0; i < 49; i++)
+  {
+    c[i].x = c[i+1].x;
+    c[i].y = c[i+1].y;
+  }
+
+  //c[counter].x = circ.x;
+  //c[counter].y = circ.y;
+
+}
+
+
+
+animation add_ball(circle c)
+{
+  if(c.x >= 470)
+  {
+    user_int1 = -1;
+  }
+  if(c.y >= 270)
+  {
+    user_int2 = -1;
+  }
+  if(c.x <= 0)
+  {
+    user_int1 = 1;
+  }
+  if(c.y <= 0)
+  {
+    user_int2 = 1;
+  }
+
+  c.y += user_int2;
+  c.x += user_int1*2;
+}

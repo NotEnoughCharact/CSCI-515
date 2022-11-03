@@ -1,0 +1,1 @@
+flex bison.l && bison -d byson.y && g++ -std=c++17 byson.tab.c lex.yy.c
