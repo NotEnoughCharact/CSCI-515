@@ -47,17 +47,18 @@ std::ostream& operator<<(std::ostream& os, const Symbol& sym)
   {
     for(int i = 0; i < sym.count; i++)
     {
+      os << to_string(sym.type) << " " << sym.name << "[" << i << "] = ";
         if(num == 1)
         {
-          os << to_string(sym.type) << " " << sym.name << "[" << i << "] = " << sym.value.int_pointer[i] << "";
+          os << sym.value.int_pointer[i];
         }
         if(num == 2)
         {
-          os << to_string(sym.type) << " " << sym.name << "[" << i << "] = " << sym.value.double_pointer[i] << "";
+          os << sym.value.double_pointer[i];
         }
         if(num == 4)
         {
-          os << to_string(sym.type) << " " << sym.name << "[" << i << "] = \"" << sym.value.string_pointer[i] << "\"";
+          os << "\"" << sym.value.string_pointer[i] << "\"";
         }
         if(i < sym.count-1)
           os << "\n";

@@ -10,6 +10,17 @@ Symbol::Symbol(const std::string& name, int* value, int count) : name(name), val
 Symbol::Symbol(const std::string& name, std::string* value) : name(name), value(value){count = 0; type = GPL::STRING;}
 Symbol::Symbol(const std::string& name, std::string* value, int count) : name(name), value(value), count(count){type = GPL::STRING;}
 
+Symbol::Symbol(const std::string& name, Pixmap* value) : name(name), value(value){count = 0; type = GPL::PIXMAP;}
+Symbol::Symbol(const std::string& name, Pixmap* value, int count) : name(name), value(value), count(count){type = GPL::PIXMAP;}
+Symbol::Symbol(const std::string& name, Rectangle* value) : name(name), value(value){count = 0; type = GPL::RECTANGLE;}
+Symbol::Symbol(const std::string& name, Rectangle* value, int count) : name(name), value(value), count(count){type = GPL::RECTANGLE;}
+Symbol::Symbol(const std::string& name, Circle* value) : name(name), value(value){count = 0; type = GPL::CIRCLE;}
+Symbol::Symbol(const std::string& name, Circle* value, int count) : name(name), value(value), count(count){type = GPL::CIRCLE;}
+Symbol::Symbol(const std::string& name, Textbox* value) : name(name), value(value){count = 0; type = GPL::TEXTBOX;}
+Symbol::Symbol(const std::string& name, Textbox* value, int count) : name(name), value(value), count(count){type = GPL::TEXTBOX;}
+Symbol::Symbol(const std::string& name, Triangle* value) : name(name), value(value){count = 0; type = GPL::TRIANGLE;}
+Symbol::Symbol(const std::string& name, Triangle* value, int count) : name(name), value(value), count(count){type = GPL::TRIANGLE;}
+
 Symbol::~Symbol()
 {
 
@@ -47,17 +58,39 @@ std::ostream& operator<<(std::ostream& os, const Symbol& sym)
   {
     for(int i = 0; i < sym.count; i++)
     {
+
+        os << to_string(sym.type) << " " << sym.name << "[" << i << "] = ";
         if(num == 1)
         {
-          os << to_string(sym.type) << " " << sym.name << "[" << i << "] = " << sym.value.int_pointer[i] << "";
+          os << sym.value.int_pointer[i];
         }
-        if(num == 2)
+        else if(num == 2)
         {
-          os << to_string(sym.type) << " " << sym.name << "[" << i << "] = " << sym.value.double_pointer[i] << "";
+          os << sym.value.double_pointer[i];
         }
-        if(num == 4)
+        else if(num == 4)
         {
-          os << to_string(sym.type) << " " << sym.name << "[" << i << "] = \"" << sym.value.string_pointer[i] << "\"";
+          os << "\"" << sym.value.string_pointer[i] << "\"";
+        }
+        else if(num == 32)
+        {
+          os << sym.value.circle_pointer[i];
+        }
+        else if(num == 64)
+        {
+          os << sym.value.rectangle_pointer[i];
+        }
+        else if(num == 128)
+        {
+          os << sym.value.triangle_pointer[i];
+        }
+        else if(num == 256)
+        {
+          os << sym.value.textbox_pointer[i];
+        }
+        else if(num == 512)
+        {
+          os << sym.value.pixmap_pointer[i];
         }
         if(i < sym.count-1)
           os << "\n";
@@ -78,6 +111,26 @@ std::ostream& operator<<(std::ostream& os, const Symbol& sym)
     if(num == 4)
     {
       os << "\"" << *sym.value.string_pointer << "\"";
+    }
+    else if(num == 32)
+    {
+      os << *sym.value.circle_pointer;
+    }
+    else if(num == 64)
+    {
+      os << *sym.value.rectangle_pointer;
+    }
+    else if(num == 128)
+    {
+      os << *sym.value.triangle_pointer;
+    }
+    else if(num == 256)
+    {
+      os << *sym.value.textbox_pointer;
+    }
+    else if(num == 512)
+    {
+      os << *sym.value.pixmap_pointer;
     }
   }
 
