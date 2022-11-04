@@ -1,5 +1,6 @@
 #include "Symbol.h"
 #include "Expression.h"
+#include "Game_attribute_constant.h"
 #include <iostream>
 
 
@@ -24,27 +25,27 @@ Symbol::Symbol(const std::string& name, Triangle* value, int count) : name(name)
 Symbol::~Symbol()
 {
 
-  if(this->type == 4 && this->count > 0)
+  if(this->type == GPL::STRING && this->count > 0)
   {
     delete []this->value.string_pointer;
   }
-  else if(this->type == 4)
+  else if(this->type == GPL::STRING)
   {
     delete this->value.string_pointer ;
   }
-  else if(this->type == 1 && this->count > 0)
+  else if(this->type == GPL::INT && this->count > 0)
   {
     delete []this->value.int_pointer;
   }
-  else if(this->type == 1)
+  else if(this->type == GPL::INT)
   {
     delete this->value.int_pointer;
   }
-  else if (this->type == 2 && this->count > 0)
+  else if (this->type == GPL::DOUBLE && this->count > 0)
   {
     delete []this->value.double_pointer;
   }
-  else
+  else if (this->type == GPL::DOUBLE)
     delete this->value.double_pointer;
 }
 
@@ -58,37 +59,39 @@ std::ostream& operator<<(std::ostream& os, const Symbol& sym)
   {
     for(int i = 0; i < sym.count; i++)
     {
-
-        os << to_string(sym.type) << " " << sym.name << "[" << i << "] = ";
-        if(num == 1)
+        if(num < 5)
+          os << to_string(sym.type) << " " << sym.name << "[" << i << "] = ";
+        else
+          os << to_string(sym.type) << " " << sym.name << "[" << i << "]";
+        if(num == GPL::INT)
         {
           os << sym.value.int_pointer[i];
         }
-        else if(num == 2)
+        else if(num == GPL::DOUBLE)
         {
           os << sym.value.double_pointer[i];
         }
-        else if(num == 4)
+        else if(num == GPL::STRING)
         {
           os << "\"" << sym.value.string_pointer[i] << "\"";
         }
-        else if(num == 32)
+        else if(num == GPL::CIRCLE)
         {
           os << sym.value.circle_pointer[i];
         }
-        else if(num == 64)
+        else if(num == GPL::RECTANGLE)
         {
           os << sym.value.rectangle_pointer[i];
         }
-        else if(num == 128)
+        else if(num == GPL::TRIANGLE)
         {
           os << sym.value.triangle_pointer[i];
         }
-        else if(num == 256)
+        else if(num == GPL::TEXTBOX)
         {
           os << sym.value.textbox_pointer[i];
         }
-        else if(num == 512)
+        else if(num == GPL::PIXMAP)
         {
           os << sym.value.pixmap_pointer[i];
         }
@@ -99,36 +102,39 @@ std::ostream& operator<<(std::ostream& os, const Symbol& sym)
   }
   else
   {
-    os << to_string(sym.type) << " " << sym.name << " = ";
-    if(num == 1)
+    if(num < 5)
+      os << to_string(sym.type) << " " << sym.name << " = ";
+    else
+      os << to_string(sym.type) << " " << sym.name;
+    if(num == GPL::INT)
     {
       os << *sym.value.int_pointer;
     }
-    if(num == 2)
+    if(num == GPL::DOUBLE)
     {
       os << *sym.value.double_pointer;
     }
-    if(num == 4)
+    if(num == GPL::STRING)
     {
       os << "\"" << *sym.value.string_pointer << "\"";
     }
-    else if(num == 32)
+    else if(num == GPL::CIRCLE)
     {
       os << *sym.value.circle_pointer;
     }
-    else if(num == 64)
+    else if(num == GPL::RECTANGLE)
     {
       os << *sym.value.rectangle_pointer;
     }
-    else if(num == 128)
+    else if(num == GPL::TRIANGLE)
     {
       os << *sym.value.triangle_pointer;
     }
-    else if(num == 256)
+    else if(num == GPL::TEXTBOX)
     {
       os << *sym.value.textbox_pointer;
     }
-    else if(num == 512)
+    else if(num == GPL::PIXMAP)
     {
       os << *sym.value.pixmap_pointer;
     }
@@ -140,20 +146,16 @@ std::ostream& operator<<(std::ostream& os, const Symbol& sym)
 const Constant* Symbol::as_constant() const
 {
   int num = type;
-  //std::cerr << num << "\n";
-  if(num == 1)
+  if(num == GPL::INT)
   {
-    //std::cerr << *value.int_pointer << "\n";
     return new Integer_constant(*value.int_pointer);
   }
-  if(num == 2)
+  else if(num == GPL::DOUBLE)
   {
-    //std::cerr << *value.double_pointer << "\n";
     return new Double_constant(*value.double_pointer);
   }
-  if(num == 4)
+  else if(num == GPL::STRING)
   {
-    //std::cerr << *value.string_pointer << "\n";
     return new String_constant(*value.string_pointer);
   }
   return nullptr;
@@ -162,22 +164,71 @@ const Constant* Symbol::as_constant() const
 const Constant* Symbol::as_constant(int index) const
 {
   int num = type;
-  if(num == 1)
+  if(num == GPL::INT)
   {
-    //std::cerr << *value.int_pointer << "\n";
     return new Integer_constant(value.int_pointer[index]);
   }
-  if(num == 2)
+  else if(num == GPL::DOUBLE)
   {
-    //std::cerr << *value.int_pointer << "\n";
     return new Double_constant(value.double_pointer[index]);
   }
-  if(num == 4)
+  else if(num == GPL::STRING)
   {
-    //std::cerr << value.string_pointer[0] << "\n";
     return new String_constant(value.string_pointer[index]);
   }
   return nullptr;
+}
+
+const Constant* Symbol::as_constant(const std::string& attribute_name) const
+{
+  int num = type;
+  if(num == GPL::CIRCLE)
+  {
+    return new Game_attribute_constant(value.circle_pointer, attribute_name);
+  }
+  else if(num == GPL::RECTANGLE)
+  {
+    return new Game_attribute_constant(value.rectangle_pointer, attribute_name);
+  }
+  else if(num == GPL::TRIANGLE)
+  {
+    return new Game_attribute_constant(value.triangle_pointer, attribute_name);
+  }
+  else if(num == GPL::TEXTBOX)
+  {
+    return new Game_attribute_constant(value.textbox_pointer, attribute_name);
+  }
+  else if(num == GPL::PIXMAP)
+  {
+    return new Game_attribute_constant(value.pixmap_pointer, attribute_name);
+  }
+  throw type;
+}
+
+const Constant* Symbol::as_constant(int index, const std::string& attribute_name) const
+{
+  int num = type;
+  if(num == GPL::CIRCLE)
+  {
+    return new Game_attribute_constant(&value.circle_pointer[index], attribute_name);
+  }
+  else if(num == GPL::RECTANGLE)
+  {
+    return new Game_attribute_constant(&value.rectangle_pointer[index], attribute_name);
+  }
+  else if(num == GPL::TRIANGLE)
+  {
+    return new Game_attribute_constant(&value.triangle_pointer[index], attribute_name);
+  }
+  else if(num == GPL::TEXTBOX)
+  {
+    return new Game_attribute_constant(&value.textbox_pointer[index], attribute_name);
+  }
+  else if(num == GPL::PIXMAP)
+  {
+    return new Game_attribute_constant(&value.pixmap_pointer[index], attribute_name);
+  }
+  throw type;
 }
 
 GPL::Type Symbol::get_type() const

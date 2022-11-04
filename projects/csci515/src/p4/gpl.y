@@ -46,6 +46,7 @@ extern int line_count;            // current line in the input; from record.l
  Constant*      union_constant_ptr;
  const Expression* union_expression_ptr;
  Variable*      union_variable_ptr;
+ const Game_object* union_game_object_ptr;
 };
 %destructor { delete $$; } <union_string>
 
@@ -156,6 +157,13 @@ extern int line_count;            // current line in the input; from record.l
 %type <union_expression_ptr> optional_initializer;
 %type <union_expression_ptr> primary_expression;
 %type <union_variable_ptr> variable;
+%type <union_game_object_ptr> object_declaration;
+%type <union_gpl_type> object_type;
+%type <union_game_object_ptr> T_CIRCLE;
+%type <union_game_object_ptr> T_PIXMAP;
+%type <union_game_object_ptr> T_RECTANGLE;
+%type <union_game_object_ptr> T_TEXTBOX;
+%type <union_game_object_ptr> T_TRIANGLE;
 
 %left T_OR
 %left T_AND
@@ -393,17 +401,115 @@ optional_initializer:
 
 //---------------------------------------------------------------------
 object_declaration:
-  object_type T_ID parameter_list_or_empty {$2; /*CHANGE*/}
-  | object_type T_ID T_LBRACKET expression T_RBRACKET {$2; /*CHANGE*/}
+  object_type T_ID parameter_list_or_empty
+  {
+    Scope_manager& scopeman=Scope_manager::instance();
+    if(scopeman.defined_in_current_scope(*$2))
+    {
+      Error::error(Error::PREVIOUSLY_DECLARED_VARIABLE,*$2);
+      // break after error because bison-generated code
+      // embeds each rule in a case of a switch statement
+      delete $2;
+      break;
+    }
+    if($1 == GPL::CIRCLE)
+    {
+      Circle* circ_ptr = new Circle();
+      scopeman.add_to_current_scope(std::make_shared<Symbol>(*$2,circ_ptr));
+    }
+    else if($1 == GPL::PIXMAP)
+    {
+      Pixmap* pix_ptr = new Pixmap();
+      scopeman.add_to_current_scope(std::make_shared<Symbol>(*$2,pix_ptr));
+    }
+    else if($1 == GPL::RECTANGLE)
+    {
+      Rectangle* rect_ptr = new Rectangle();
+      scopeman.add_to_current_scope(std::make_shared<Symbol>(*$2,rect_ptr));
+    }
+    else if($1 == GPL::TEXTBOX)
+    {
+      Textbox* text_ptr = new Textbox();
+      scopeman.add_to_current_scope(std::make_shared<Symbol>(*$2,text_ptr));
+    }
+    else if($1 == GPL::TRIANGLE)
+    {
+      Triangle* tri_ptr = new Triangle();
+      scopeman.add_to_current_scope(std::make_shared<Symbol>(*$2,tri_ptr));
+    }
+  }
+  | object_type T_ID T_LBRACKET expression T_RBRACKET
+    {
+      Scope_manager& scopeman=Scope_manager::instance();
+      const Constant* c = $4->evaluate();
+      bool in_scope = scopeman.defined_in_current_scope(*$2);
+      bool create = false;
+      if($4->type() != GPL::INT)
+      {
+        Error::error(Error::ARRAY_SIZE_MUST_BE_AN_INTEGER, to_string($4->type()), *$2);
+        Circle* temp_obj = new Circle[1];
+        scopeman.add_to_current_scope(std::make_shared<Symbol>(*$2, temp_obj, 1));
+        delete $4;
+        delete $2;
+        break;
+      }
+      int num = c->as_int();
+      if(num < 1)
+      {
+        std::string temp = std::to_string(num);
+        Error::error(Error::INVALID_ARRAY_SIZE,*$2,temp);
+        create = true;
+      }
+      if(in_scope)
+      {
+        Error::error(Error::PREVIOUSLY_DECLARED_VARIABLE,*$2);
+      }
+      if(create && !in_scope)
+      {
+        Circle* temp_obj = new Circle[1];
+        scopeman.add_to_current_scope(std::make_shared<Symbol>(*$2, temp_obj, 1));
+      }
+      if(create || in_scope)
+      {
+        delete $2;
+        delete $4;
+        break;
+      }
+      if($1 == GPL::CIRCLE)
+      {
+        Circle* circ_ptr = new Circle[num];
+        scopeman.add_to_current_scope(std::make_shared<Symbol>(*$2,circ_ptr,num));
+      }
+      else if($1 == GPL::PIXMAP)
+      {
+        Pixmap* pix_ptr = new Pixmap[num];
+        scopeman.add_to_current_scope(std::make_shared<Symbol>(*$2,pix_ptr,num));
+      }
+      else if($1 == GPL::RECTANGLE)
+      {
+        Rectangle* rect_ptr = new Rectangle[num];
+        scopeman.add_to_current_scope(std::make_shared<Symbol>(*$2,rect_ptr,num));
+      }
+      else if($1 == GPL::TEXTBOX)
+      {
+        Textbox* text_ptr = new Textbox[num];
+        scopeman.add_to_current_scope(std::make_shared<Symbol>(*$2,text_ptr,num));
+      }
+      else if($1 == GPL::TRIANGLE)
+      {
+        Triangle* tri_ptr = new Triangle[num];
+        scopeman.add_to_current_scope(std::make_shared<Symbol>(*$2,tri_ptr,num));
+      }
+    }
 
 
 //---------------------------------------------------------------------
 object_type:
-    T_TRIANGLE
-    | T_PIXMAP
-    | T_CIRCLE
-    | T_RECTANGLE
-    | T_TEXTBOX
+    T_TRIANGLE        {$$=GPL::TRIANGLE;}
+    | T_PIXMAP        {$$=GPL::PIXMAP;}
+    | T_CIRCLE        {$$=GPL::CIRCLE;}
+    | T_RECTANGLE     {$$=GPL::RECTANGLE;}
+    | T_TEXTBOX       {$$=GPL::TEXTBOX;}
 
 
 //---------------------------------------------------------------------

@@ -63,6 +63,8 @@ public:
 
   const Constant* as_constant() const;          //Symbol value is not an array
   const Constant* as_constant(int index) const; //Symbol value is an array
+  const Constant* as_constant(           const std::string& attribute_name) const; // non-arrays
+  const Constant* as_constant(int index, const std::string& attribute_name) const; // arrays
 
   GPL::Type get_type() const;
   std::string get_name() const{return this->name;};
