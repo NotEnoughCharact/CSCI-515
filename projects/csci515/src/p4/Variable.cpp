@@ -26,16 +26,8 @@ const Constant* Variable::evaluate() const
   {
     if(array_index_expression->type() != GPL::INT)
     {
-      if(array_index_expression->type() == GPL::DOUBLE)
-      {
-        Error::error(Error::ARRAY_INDEX_MUST_BE_AN_INTEGER, symbol_name, to_string(GPL::DOUBLE));
-        return ret(new Integer_constant(0));
-      }
-      if(array_index_expression->type() == GPL::STRING)
-      {
-        Error::error(Error::ARRAY_INDEX_MUST_BE_AN_INTEGER, symbol_name, to_string(GPL::STRING));
-        return ret(new Integer_constant(0));
-      }
+      Error::error(Error::ARRAY_INDEX_MUST_BE_AN_INTEGER, symbol_name, to_string(array_index_expression->type()));
+      return ret(new Integer_constant(0));
     }
   }
   if(temp->get_count() == 0 && array_index_expression != nullptr)
@@ -66,9 +58,8 @@ GPL::Type Variable::type() const
   }
   if (temp == nullptr)
     return GPL::INT;
-  const Constant* c = temp->as_constant();
-  GPL::Type t = c->type();
-  delete c;
+  GPL::Type t = temp->get_type();
+  // failing in above line
   return t;
 }
 

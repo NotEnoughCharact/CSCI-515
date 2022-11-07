@@ -1,4 +1,5 @@
 #include "Game_attribute_constant.h"
+#include <string.h>
 
 int Game_attribute_constant::as_int() const
 {
@@ -20,6 +21,12 @@ double Game_attribute_constant::as_double() const
   {
     throw type();
   }
+  else if(t == GPL::INT)
+  {
+    int temp;
+    gop->read_attribute(attribute_name, temp);
+    return temp;
+  }
   else
   {
     double temp;
@@ -37,7 +44,19 @@ std::string Game_attribute_constant::as_string() const
     gop->read_attribute(attribute_name, temp);
     return temp;
   }
+  else if(t == GPL::INT)
+  {
+    int temp;
+    gop->read_attribute(attribute_name, temp);
+    return std::to_string(temp);
+  }
+  else if(t == GPL::DOUBLE)
+  {
+    double temp;
+    gop->read_attribute(attribute_name, temp);
+    return std::to_string(temp);
+  }
   else
     throw type();
-    
+
 }

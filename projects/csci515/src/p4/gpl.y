@@ -10,6 +10,7 @@
   #include "Variable.h"
   #include "Constant.h"
   #include "Scope_manager.h"
+  #include "Member_variable.h"
   #include <cassert>
   #ifndef P1
     #include "types_and_ops.h"  //include in all projects except the first
@@ -30,6 +31,14 @@ extern int line_count;            // current line in the input; from record.l
 
 #include "error.h"      // class for printing errors (used by gpl)
 #include <iostream>
+#include "Expression.h"
+
+struct Parameter {
+      const Expression* value;
+      std::string name;
+      Parameter* next=nullptr; //default initialization
+      ~Parameter() { delete next; }
+};
 
 // bison syntax indicating the end of a C/C++ code section
 %}
@@ -47,6 +56,7 @@ extern int line_count;            // current line in the input; from record.l
  const Expression* union_expression_ptr;
  Variable*      union_variable_ptr;
  const Game_object* union_game_object_ptr;
+ Parameter*     union_parameter_ptr;
 };
 %destructor { delete $$; } <union_string>
 
@@ -164,6 +174,9 @@ extern int line_count;            // current line in the input; from record.l
 %type <union_game_object_ptr> T_RECTANGLE;
 %type <union_game_object_ptr> T_TEXTBOX;
 %type <union_game_object_ptr> T_TRIANGLE;
+%type <union_parameter_ptr> parameter;
+%type <union_parameter_ptr> parameter_list;
+%type <union_parameter_ptr> parameter_list_or_empty;
 
 %left T_OR
 %left T_AND
@@ -282,9 +295,10 @@ variable_declaration:
             break;
           }
           default:
+          {
             assert(false);
+          }
         }
-        //delete c;
       }
       else
       {
@@ -303,7 +317,9 @@ variable_declaration:
             scopeman.add_to_current_scope(std::make_shared<Symbol>(*$2, str_ptr));
             break;
           default:
+          {
             assert(false);
+          }
         }
       }
       delete $2;
@@ -415,28 +431,233 @@ object_declaration:
     if($1 == GPL::CIRCLE)
     {
       Circle* circ_ptr = new Circle();
+      struct Parameter* temp = $3;
+      while(temp != nullptr)
+      {
+        bool exists = false;
+        try
+        {
+          const Constant* c = temp->value->evaluate();
+          GPL::Type exp_type = c->type();
+          GPL::Type att_type = circ_ptr->attribute_type(temp->name);
+          exists = true;
+          if(att_type == GPL::INT && exp_type == GPL::INT)
+          {
+            circ_ptr->write_attribute(temp->name, c->as_int());
+          }
+          else if(att_type == GPL::DOUBLE && att_type != GPL::STRING)
+          {
+            circ_ptr->write_attribute(temp->name, c->as_double());
+          }
+          else if(att_type == GPL::STRING)
+          {
+            circ_ptr->write_attribute(temp->name, c->as_string());
+          }
+          else
+          {
+            throw 1;
+          }
+
+        }
+        catch(...)
+        {
+          if(exists)
+          {
+            Error::error(Error::INCORRECT_CONSTRUCTOR_PARAMETER_TYPE, *$2, temp->name);
+          }
+          else
+          {
+            Error::error(Error::UNKNOWN_CONSTRUCTOR_PARAMETER, *$2, temp->name);
+          }
+        }
+        temp = temp->next;
+      }
       scopeman.add_to_current_scope(std::make_shared<Symbol>(*$2,circ_ptr));
     }
     else if($1 == GPL::PIXMAP)
     {
       Pixmap* pix_ptr = new Pixmap();
+      struct Parameter* temp = $3;
+      while(temp != nullptr)
+      {
+        bool exists = false;
+        try
+        {
+          const Constant* c = temp->value->evaluate();
+          GPL::Type exp_type = c->type();
+          GPL::Type att_type = pix_ptr->attribute_type(temp->name);
+          exists = true;
+          if(att_type == GPL::INT && exp_type == GPL::INT)
+          {
+            pix_ptr->write_attribute(temp->name, c->as_int());
+          }
+          else if(att_type == GPL::DOUBLE && att_type != GPL::STRING)
+          {
+            pix_ptr->write_attribute(temp->name, c->as_double());
+          }
+          else if(att_type == GPL::STRING)
+          {
+            pix_ptr->write_attribute(temp->name, c->as_string());
+          }
+          else
+          {
+            throw 1;
+          }
+
+        }
+        catch(...)
+        {
+          if(exists)
+          {
+            Error::error(Error::INCORRECT_CONSTRUCTOR_PARAMETER_TYPE, *$2, temp->name);
+          }
+          else
+          {
+            Error::error(Error::UNKNOWN_CONSTRUCTOR_PARAMETER, *$2, temp->name);
+          }
+        }
+        temp = temp->next;
+      }
       scopeman.add_to_current_scope(std::make_shared<Symbol>(*$2,pix_ptr));
     }
     else if($1 == GPL::RECTANGLE)
     {
       Rectangle* rect_ptr = new Rectangle();
+      struct Parameter* temp = $3;
+      while(temp != nullptr)
+      {
+        bool exists = false;
+        try
+        {
+          const Constant* c = temp->value->evaluate();
+          GPL::Type exp_type = c->type();
+          GPL::Type att_type = rect_ptr->attribute_type(temp->name);
+          exists = true;
+          if(att_type == GPL::INT && exp_type == GPL::INT)
+          {
+            rect_ptr->write_attribute(temp->name, c->as_int());
+          }
+          else if(att_type == GPL::DOUBLE && att_type != GPL::STRING)
+          {
+            rect_ptr->write_attribute(temp->name, c->as_double());
+          }
+          else if(att_type == GPL::STRING)
+          {
+            rect_ptr->write_attribute(temp->name, c->as_string());
+          }
+          else
+          {
+            throw 1;
+          }
+
+        }
+        catch(...)
+        {
+          if(exists)
+          {
+            Error::error(Error::INCORRECT_CONSTRUCTOR_PARAMETER_TYPE, *$2, temp->name);
+          }
+          else
+          {
+            Error::error(Error::UNKNOWN_CONSTRUCTOR_PARAMETER, *$2, temp->name);
+          }
+        }
+        temp = temp->next;
+      }
       scopeman.add_to_current_scope(std::make_shared<Symbol>(*$2,rect_ptr));
     }
     else if($1 == GPL::TEXTBOX)
     {
       Textbox* text_ptr = new Textbox();
+      struct Parameter* temp = $3;
+      while(temp != nullptr)
+      {
+        bool exists = false;
+        try
+        {
+          const Constant* c = temp->value->evaluate();
+          GPL::Type exp_type = c->type();
+          GPL::Type att_type = text_ptr->attribute_type(temp->name);
+          exists = true;
+          if(att_type == GPL::INT && exp_type == GPL::INT)
+          {
+            text_ptr->write_attribute(temp->name, c->as_int());
+          }
+          else if(att_type == GPL::DOUBLE && att_type != GPL::STRING)
+          {
+            text_ptr->write_attribute(temp->name, c->as_double());
+          }
+          else if(att_type == GPL::STRING)
+          {
+            text_ptr->write_attribute(temp->name, c->as_string());
+          }
+          else
+          {
+            throw 1;
+          }
+        }
+        catch(...)
+        {
+          if(exists)
+          {
+            Error::error(Error::INCORRECT_CONSTRUCTOR_PARAMETER_TYPE, *$2, temp->name);
+          }
+          else
+          {
+            Error::error(Error::UNKNOWN_CONSTRUCTOR_PARAMETER, *$2, temp->name);
+          }
+        }
+        temp = temp->next;
+      }
       scopeman.add_to_current_scope(std::make_shared<Symbol>(*$2,text_ptr));
     }
     else if($1 == GPL::TRIANGLE)
     {
       Triangle* tri_ptr = new Triangle();
+      struct Parameter* temp = $3;
+      while(temp != nullptr)
+      {
+        bool exists = false;
+        try
+        {
+          const Constant* c = temp->value->evaluate();
+          GPL::Type exp_type = c->type();
+          GPL::Type att_type = tri_ptr->attribute_type(temp->name);
+          exists = true;
+          if(att_type == GPL::INT && exp_type == GPL::INT)
+          {
+            tri_ptr->write_attribute(temp->name, c->as_int());
+          }
+          else if(att_type == GPL::DOUBLE && att_type != GPL::STRING)
+          {
+            tri_ptr->write_attribute(temp->name, c->as_double());
+          }
+          else if(att_type == GPL::STRING)
+          {
+            tri_ptr->write_attribute(temp->name, c->as_string());
+          }
+          else
+          {
+            throw 1;
+          }
+        }
+        catch(...)
+        {
+          if(exists)
+          {
+            Error::error(Error::INCORRECT_CONSTRUCTOR_PARAMETER_TYPE, *$2, temp->name);
+          }
+          else
+          {
+            Error::error(Error::UNKNOWN_CONSTRUCTOR_PARAMETER, *$2, temp->name);
+          }
+        }
+        temp = temp->next;
+      }
       scopeman.add_to_current_scope(std::make_shared<Symbol>(*$2,tri_ptr));
     }
+    delete $3;
+    delete $2;
   }
   | object_type T_ID T_LBRACKET expression T_RBRACKET
     {
@@ -514,20 +735,34 @@ object_type:
 
 //---------------------------------------------------------------------
 parameter_list_or_empty :
-    T_LPAREN parameter_list T_RPAREN
-    | T_LPAREN T_RPAREN
-    | %empty
+    T_LPAREN parameter_list T_RPAREN {$$=$2;}
+    | T_LPAREN T_RPAREN {$$=nullptr;}
+    | %empty {$$=nullptr;}
 
 
 //---------------------------------------------------------------------
 parameter_list :
     parameter_list T_COMMA parameter
-    | parameter
+    {
+      struct Parameter* temp = $1;
+      while(temp->next != nullptr)
+      {
+        temp = temp->next;
+      }
+      temp->next = $3;
+    }
+    | parameter {$$=$1;}
 
 
 //---------------------------------------------------------------------
 parameter:
     T_ID T_ASSIGN expression
+    {
+      struct Parameter* temp = new Parameter;
+      temp->name = *$1;
+      temp->value = $3;
+      $$=temp;
+    }
 
 
 //---------------------------------------------------------------------
@@ -675,8 +910,77 @@ assign_statement:
 variable:
     T_ID { $$ = new Variable(*$1); delete $1; }
     | T_ID T_LBRACKET expression T_RBRACKET { $$ = new Variable(*$1, $3); delete $1;}
-    | T_ID T_PERIOD T_ID {$3=$3; $1=$1;}
-    | T_ID T_LBRACKET expression T_RBRACKET T_PERIOD T_ID {$6=$6; $1=$1;}
+    | T_ID T_PERIOD T_ID
+      {
+        std::shared_ptr<Symbol> sym;
+        Scope_manager& scopeman=Scope_manager::instance();
+        sym = scopeman.lookup(*$1);
+        if(sym == nullptr)
+        {
+          Error::error(Error::UNDECLARED_VARIABLE, *$1);
+          $$=new Variable("");
+          delete $1;
+          delete $3;
+          break;
+        }
+        try
+        {
+          std::shared_ptr<const Constant>(sym->as_constant(*$3));
+        }
+        catch(...)
+        {
+          Error::error(Error::UNDECLARED_MEMBER, *$1, *$3);
+          $$=new Variable("");
+          delete $1;
+          delete $3;
+          break;
+        }
+        $$ = new Member_variable(*$1, *$3);
+        delete $1;
+        delete $3;
+      }
+    | T_ID T_LBRACKET expression T_RBRACKET T_PERIOD T_ID
+      {
+        std::shared_ptr<Symbol> sym, sym2;
+        Scope_manager& scopeman=Scope_manager::instance();
+        sym = scopeman.lookup(*$1);
+        if(sym == nullptr)
+        {
+          const Expression* temp = new Integer_constant(1);
+          Error::error(Error::UNDECLARED_VARIABLE, *$1+"[]");
+          $$=new Variable("", temp);
+          delete $1;
+          delete $3;
+          delete $6;
+          break;
+        }
+        if($3->type() != GPL::INT)
+        {
+          
+          Error::error(Error::ARRAY_INDEX_MUST_BE_AN_INTEGER, *$1, to_string($3->type()));
+          const Expression* temp = new Integer_constant(1);
+          $$=new Variable("",temp);
+          delete $1; delete $3; delete $6;
+          break;
+        }
+        try
+        {
+          std::shared_ptr<const Constant>(sym->as_constant(*$6));
+        }
+        catch(...)
+        {
+          const Expression* temp = new Integer_constant(1);
+          Error::error(Error::UNDECLARED_MEMBER, *$1, *$6);
+          $$=new Variable("",temp);
+          delete $1;
+          delete $3;
+          delete $6;
+          break;
+        }
+        $$ = new Member_variable(*$1, $3, *$6);
+        delete $1;
+        delete $6;
+      }
 
 
 //---------------------------------------------------------------------
