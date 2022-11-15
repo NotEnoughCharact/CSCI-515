@@ -15,17 +15,20 @@ Event_manager::~Event_manager()
 {
   for(int i = 0; i < Window::NUMBER_OF_KEYS; i++)
   {
-    delete head_arr[i];
+    for(int j = 0; j < (int)head_arr[i].size(); j++)
+    {
+      delete head_arr[i][j];
+    }
   }
 }
 
 void Event_manager::execute_handlers(Window::Keystroke keystroke) const
 {
-  for(int i = 0; i < Window::NUMBER_OF_KEYS; i++)
+  for(int j = 0; j < (int)head_arr[keystroke].size(); j++)
   {
-    if(head_arr[i] != nullptr)
+    if(head_arr[keystroke][j] != nullptr)
     {
-      head_arr[i]->execute();
+      head_arr[keystroke][j]->execute();
     }
   }
 }
@@ -34,7 +37,7 @@ void Event_manager::add_handler(Window::Keystroke key, const Statement* statemen
 {
   if(key >= Window::SPACE && key < Window::NUMBER_OF_KEYS)
   {
-    head_arr[key] = statement;
+    head_arr[key].push_back(statement);
   }
   else
     assert(false);

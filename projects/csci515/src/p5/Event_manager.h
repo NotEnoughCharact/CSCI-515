@@ -43,8 +43,8 @@ class Event_manager
 
   private:
 
-    Event_manager(){};
-    const Statement* head_arr[Window::NUMBER_OF_KEYS] = {nullptr};
+    Event_manager(){head_arr.resize(Window::NUMBER_OF_KEYS);}
+    std::vector<std::vector<const Statement*>> head_arr;
 
 };
 
