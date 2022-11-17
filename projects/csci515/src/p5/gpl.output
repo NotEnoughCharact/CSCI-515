@@ -356,10 +356,10 @@ Nonterminals, with rules where they appear
     exit_statement (123)
         on left: 80
         on right: 75
-    assign_statement_or_empty (124)
+    assign_statement_or_empty <union_statement_ptr> (124)
         on left: 81 82
         on right: 78
-    assign_statement (125)
+    assign_statement <union_statement_ptr> (125)
         on left: 83 84 85 86 87
         on right: 73 81
     variable <union_variable_ptr> (126)

@@ -68,6 +68,9 @@ public:
   const Constant* as_constant(int index, const std::string& attribute_name) const; // arrays
 
   std::shared_ptr<Locator> as_lvalue() const;
+  std::shared_ptr<Locator> as_lvalue(int index) const;
+  std::shared_ptr<Locator> as_lvalue(const std::string& attribute_name) const;
+  std::shared_ptr<Locator> as_lvalue(int index, const std::string& attribute_name) const;
 
   GPL::Type get_type() const;
   std::string get_name() const{return this->name;};

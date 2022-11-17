@@ -9,7 +9,6 @@ class Statement {
     Statement() {}
     virtual void execute() const=0;
     virtual ~Statement() {delete next;}
-    virtual Statement* get_next() {return next;}
   protected:
     Statement* next{nullptr};
 };

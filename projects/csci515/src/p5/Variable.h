@@ -15,6 +15,7 @@ class Variable : public Expression {
     Variable(const std::string& symbol_name, const Expression* index_expr);
 
     virtual const Constant* evaluate() const;
+    virtual const std::shared_ptr<Locator> modify() const;
     virtual GPL::Type type() const;
     virtual ~Variable();
 

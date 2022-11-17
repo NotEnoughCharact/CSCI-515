@@ -35,6 +35,7 @@ extern int line_count;            // current line in the input; from record.l
 #include "Print.h"
 #include "Statement.h"
 #include "Event_manager.h"
+#include "Assign.h"
 
 struct Parameter {
       const Expression* value;
@@ -188,6 +189,9 @@ struct Parameter {
 %type <union_statement_ptr> statement_block;
 %type <union_statement_ptr> statement_or_block_of_statements;
 %type <union_statement_ptr> print_statement;
+%type <union_statement_ptr> assign_statement;
+%type <union_statement_ptr> assign_statement_or_empty;
+
 
 
 %type <union_keystroke> keystroke;
@@ -948,7 +952,7 @@ statement_block:
 
 //---------------------------------------------------------------------
 statement_list:
-    statement_list statement   { $1->append_statement($2); $$=$1; }
+    statement_list statement   { $1->append_statement($2); $$=$1;}
     | statement  { $$=$1; }
 
 
@@ -956,7 +960,7 @@ statement_list:
 statement:
     if_statement               { $$=nullptr; /*CHANGE*/}
     | for_statement            { $$=nullptr; /*CHANGE*/}
-    | assign_statement T_SEMIC { $$=nullptr; /*CHANGE*/}
+    | assign_statement T_SEMIC { $$=$1; }
     | print_statement T_SEMIC  { $$=$1; }
     | exit_statement T_SEMIC   { $$=nullptr; /*CHANGE*/}
 
@@ -973,7 +977,15 @@ for_statement:
 
 //---------------------------------------------------------------------
 print_statement:
-    T_PRINT T_LPAREN expression T_RPAREN { $$=new Print(line_count,$3); $1=$1;}
+    T_PRINT T_LPAREN expression T_RPAREN
+    {
+      if($3->type() != GPL::INT && $3->type() != GPL::DOUBLE && $3->type() != GPL::STRING)
+      {
+        Error::error(Error::INVALID_TYPE_FOR_PRINT_STMT_EXPRESSION);
+      }
+      $$=new Print(line_count,$3);
+      $1=$1;
+    }
 
 
 //---------------------------------------------------------------------
@@ -983,17 +995,17 @@ exit_statement:
 
 //---------------------------------------------------------------------
 assign_statement_or_empty:
-    assign_statement
-    | %empty
+    assign_statement { $$=$1; }
+    | %empty {$$=nullptr;}
 
 
 //---------------------------------------------------------------------
 assign_statement:
-    variable T_ASSIGN expression
-    | variable T_PLUS_ASSIGN expression
-    | variable T_MINUS_ASSIGN expression
-    | variable T_PLUS_PLUS
-    | variable T_MINUS_MINUS
+    variable T_ASSIGN expression { $$ = new Assign($1,$3); }
+    | variable T_PLUS_ASSIGN expression    {$$=nullptr;}
+    | variable T_MINUS_ASSIGN expression   {$$=nullptr;}
+    | variable T_PLUS_PLUS                 {$$=nullptr;}
+    | variable T_MINUS_MINUS               {$$=nullptr;}
 
 
 //---------------------------------------------------------------------

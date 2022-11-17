@@ -11,6 +11,7 @@ class Member_variable : public Variable {
     Member_variable(const std::string& name, const Expression* index_expr, const::std::string& attribute);
 
     virtual const Constant* evaluate() const override;
+    virtual const std::shared_ptr<Locator> modify() const override;
     virtual GPL::Type type() const override;
 
   private:

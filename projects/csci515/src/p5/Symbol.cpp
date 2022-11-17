@@ -238,5 +238,88 @@ GPL::Type Symbol::get_type() const
 
 std::shared_ptr<Locator> Symbol::as_lvalue() const
 {
-  return nullptr; /*CHANGE*/
+  int num = type;
+  if(num == GPL::INT)
+  {
+    return std::make_shared<Integer_locator>(*value.int_pointer);
+  }
+  else if(num == GPL::DOUBLE)
+  {
+    return std::make_shared<Double_locator>(*value.double_pointer);
+  }
+  else if(num == GPL::STRING)
+  {
+    return std::make_shared<String_locator>(*value.string_pointer);
+  }
+  return nullptr;
+}
+
+std::shared_ptr<Locator> Symbol::as_lvalue(int index) const
+{
+  int num = type;
+  if(num == GPL::INT)
+  {
+    return std::make_shared<Integer_locator>(value.int_pointer[index]);
+  }
+  else if(num == GPL::DOUBLE)
+  {
+    return std::make_shared<Double_locator>(value.double_pointer[index]);
+  }
+  else if(num == GPL::STRING)
+  {
+    return std::make_shared<String_locator>(value.string_pointer[index]);
+  }
+  return nullptr;
+}
+
+std::shared_ptr<Locator> Symbol::as_lvalue(const std::string& attribute_name) const
+{
+  int num = type;
+  if(num == GPL::CIRCLE)
+  {
+    return std::make_shared<Game_attribute_locator>(value.circle_pointer, attribute_name);
+  }
+  else if(num == GPL::RECTANGLE)
+  {
+    return std::make_shared<Game_attribute_locator>(value.rectangle_pointer, attribute_name);
+  }
+  else if(num == GPL::TRIANGLE)
+  {
+    return std::make_shared<Game_attribute_locator>(value.triangle_pointer, attribute_name);
+  }
+  else if(num == GPL::TEXTBOX)
+  {
+    return std::make_shared<Game_attribute_locator>(value.textbox_pointer, attribute_name);
+  }
+  else if(num == GPL::PIXMAP)
+  {
+    return std::make_shared<Game_attribute_locator>(value.pixmap_pointer, attribute_name);
+  }
+  throw type;
+}
+
+std::shared_ptr<Locator> Symbol::as_lvalue(int index, const std::string& attribute_name) const
+{
+  int num = type;
+  if(num == GPL::CIRCLE)
+  {
+    return std::make_shared<Game_attribute_locator>(&value.circle_pointer[index], attribute_name);
+  }
+  else if(num == GPL::RECTANGLE)
+  {
+    return std::make_shared<Game_attribute_locator>(&value.rectangle_pointer[index], attribute_name);
+  }
+  else if(num == GPL::TRIANGLE)
+  {
+    return std::make_shared<Game_attribute_locator>(&value.triangle_pointer[index], attribute_name);
+  }
+  else if(num == GPL::TEXTBOX)
+  {
+    return std::make_shared<Game_attribute_locator>(&value.textbox_pointer[index], attribute_name);
+  }
+  else if(num == GPL::PIXMAP)
+  {
+    return std::make_shared<Game_attribute_locator>(&value.pixmap_pointer[index], attribute_name);
+  }
+  throw type;
 }
