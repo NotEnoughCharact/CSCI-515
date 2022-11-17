@@ -1,16 +1,19 @@
 #include "Assign.h"
 #include "Locator.h"
 #include "Constant.h"
+#include "error.h"
+#include <string>
 
 void Assign::execute() const
 {
+  std::cerr << "here\n";
   const std::shared_ptr<Locator> left = lhs->modify();
   const Constant* c = rhs->evaluate();
   if(left->type() == GPL::INT)
   {
     if(c->type() != GPL::INT)
     {
-
+      Error::error(Error::ASSIGNMENT_TYPE_ERROR, to_string(left->type()), to_string(c->type()));
     }
     else
     {
@@ -21,7 +24,7 @@ void Assign::execute() const
   {
     if(c->type() == GPL::STRING)
     {
-
+      Error::error(Error::ASSIGNMENT_TYPE_ERROR, to_string(left->type()), to_string(c->type()));
     }
     else
     {
@@ -34,7 +37,6 @@ void Assign::execute() const
   }
   else
     throw left->type();
-  //std::cerr << left->ret_string() << "\n";
   if(next!=nullptr) next->execute();
 
 }

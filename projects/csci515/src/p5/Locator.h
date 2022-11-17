@@ -16,7 +16,6 @@ class Locator {
     virtual void mutate(int)                {throw intrinsic_type;}
     virtual void mutate(double)             {throw intrinsic_type;}
     virtual void mutate(const std::string& ){throw intrinsic_type;}
-    virtual std::string ret_string(){return "base";};
     GPL::Type type() const;
 };
 
@@ -27,7 +26,6 @@ class Integer_locator : public Locator {
     Integer_locator(int& d)
       : Locator(GPL::INT), data(d) {}
     virtual void mutate(int val) { data=val; }
-    std::string ret_string(){return std::to_string(data);}
 };
 
 class Double_locator : public Locator {
@@ -38,7 +36,6 @@ class Double_locator : public Locator {
       : Locator(GPL::DOUBLE), data(d) {}
     double get_data() {return data;}
     virtual void mutate(double val) { data=val; }
-    std::string ret_string(){return std::to_string(data);}
 };
 
 class String_locator : public Locator {
@@ -48,7 +45,6 @@ class String_locator : public Locator {
     String_locator(std::string& d)
       : Locator(GPL::STRING), data(d) {}
     virtual void mutate(const std::string& val) { data=val;}
-    std::string ret_string(){return data;}
 };
 
 class Game_attribute_locator : public Locator {
@@ -61,7 +57,6 @@ class Game_attribute_locator : public Locator {
     virtual void mutate(int val);
     virtual void mutate(double val);
     virtual void mutate(const std::string& val);
-    std::string ret_string(){return "s";}
 };
 
 #endif

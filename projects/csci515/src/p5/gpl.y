@@ -1001,7 +1001,39 @@ assign_statement_or_empty:
 
 //---------------------------------------------------------------------
 assign_statement:
-    variable T_ASSIGN expression { $$ = new Assign($1,$3); }
+    variable T_ASSIGN expression
+    {
+      if($1->type() != GPL::INT && $1->type() != GPL::DOUBLE && $1->type() != GPL::STRING)
+      {
+        Error::error(Error::INVALID_LHS_OF_ASSIGNMENT, $1->get_name(), to_string($1->type()));
+        break;
+      }
+      if($1->type() == GPL::INT)
+      {
+        if($3->type() != GPL::INT)
+        {
+          Error::error(Error::ASSIGNMENT_TYPE_ERROR, to_string($1->type()), to_string($3->type()));
+          break;
+        }
+      }
+      else if($1->type() == GPL::DOUBLE)
+      {
+        if($3->type() != GPL::INT && $3->type() != GPL::DOUBLE)
+        {
+          Error::error(Error::ASSIGNMENT_TYPE_ERROR, to_string($1->type()), to_string($3->type()));
+          break;
+        }
+      }
+      else if($1->type() == GPL::STRING)
+      {
+        if($3->type() != GPL::INT && $3->type() != GPL::DOUBLE && $3->type() != GPL::STRING)
+        {
+          Error::error(Error::ASSIGNMENT_TYPE_ERROR, to_string($1->type()), to_string($3->type()));
+          break;
+        }
+      }
+      $$ = new Assign($1,$3);
+    }
     | variable T_PLUS_ASSIGN expression    {$$=nullptr;}
     | variable T_MINUS_ASSIGN expression   {$$=nullptr;}
     | variable T_PLUS_PLUS                 {$$=nullptr;}

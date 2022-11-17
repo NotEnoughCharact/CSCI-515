@@ -45,6 +45,10 @@ const Constant* Variable::evaluate() const
     Error::error(Error::ARRAY_INDEX_OUT_OF_BOUNDS, temp->get_name(), array_index_expression->evaluate()->as_string());
     return ret(new Integer_constant(0));
   }
+  if(array_index_expression != nullptr)
+  {
+    return ret(temp->as_constant(array_index_expression->evaluate()->as_int()));
+  }
   return ret(temp->as_constant());
 
 }
