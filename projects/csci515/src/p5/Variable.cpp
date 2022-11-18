@@ -89,14 +89,16 @@ const std::shared_ptr<Locator> Variable::modify() const
     Error::error(Error::VARIABLE_IS_AN_ARRAY, temp->get_name());
     return std::make_shared<Integer_locator>(i_temp);
   }
-  if (array_index_expression != nullptr && array_index_expression->evaluate()->as_int() >= temp->get_count())
+  if (array_index_expression != nullptr && (array_index_expression->evaluate()->as_int() >= temp->get_count() || array_index_expression->evaluate()->as_int() < 0))
   {
     Error::error(Error::ARRAY_INDEX_OUT_OF_BOUNDS, temp->get_name(), array_index_expression->evaluate()->as_string());
-    return std::make_shared<Integer_locator>(i_temp);
   }
   if(array_index_expression != nullptr)
   {
-    return temp->as_lvalue(array_index_expression->evaluate()->as_int());
+    if(array_index_expression->evaluate()->as_int() >= 0 && array_index_expression->evaluate()->as_int() < temp->get_count())
+      return temp->as_lvalue(array_index_expression->evaluate()->as_int());
+    else
+      return temp->as_lvalue(0);
   }
   else
   {
@@ -115,8 +117,13 @@ GPL::Type Variable::type() const
   if (temp == nullptr)
     return GPL::INT;
   GPL::Type t = temp->get_type();
-  // failing in above line
   return t;
+}
+
+int Variable::get_arr_count()
+{
+  std::shared_ptr<Symbol> temp = symbol();
+  return temp->get_count();
 }
 
 Variable::~Variable()

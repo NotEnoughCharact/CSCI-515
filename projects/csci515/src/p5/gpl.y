@@ -36,6 +36,9 @@ extern int line_count;            // current line in the input; from record.l
 #include "Statement.h"
 #include "Event_manager.h"
 #include "Assign.h"
+#include "If.h"
+#include "For.h"
+#include "Exit.h"
 
 struct Parameter {
       const Expression* value;
@@ -86,7 +89,7 @@ struct Parameter {
 %token T_FOR                 "for"
 %token T_ELSE                "else"
 %token <union_int> T_EXIT            "exit"  /* value is line number */
-%token <union_string> T_PRINT           "print"  /* value is line number */
+%token <union_int> T_PRINT           "print"  /* value is line number */
 %token T_TRUE                "true"
 %token T_FALSE               "false"
 
@@ -191,6 +194,9 @@ struct Parameter {
 %type <union_statement_ptr> print_statement;
 %type <union_statement_ptr> assign_statement;
 %type <union_statement_ptr> assign_statement_or_empty;
+%type <union_statement_ptr> if_statement;
+%type <union_statement_ptr> for_statement;
+%type <union_statement_ptr> exit_statement;
 
 
 
@@ -958,21 +964,48 @@ statement_list:
 
 //---------------------------------------------------------------------
 statement:
-    if_statement               { $$=nullptr; /*CHANGE*/}
-    | for_statement            { $$=nullptr; /*CHANGE*/}
+    if_statement               { $$=$1; }
+    | for_statement            { $$=$1; }
     | assign_statement T_SEMIC { $$=$1; }
     | print_statement T_SEMIC  { $$=$1; }
-    | exit_statement T_SEMIC   { $$=nullptr; /*CHANGE*/}
+    | exit_statement T_SEMIC   { $$=$1; }
 
 
 //---------------------------------------------------------------------
 if_statement:
     T_IF T_LPAREN expression T_RPAREN statement_or_block_of_statements %prec T_IF_NO_ELSE
+    {
+      if($3->type() != GPL::INT)
+      {
+        Error::error(Error::INVALID_TYPE_FOR_IF_STMT_EXPRESSION);
+        $$ = new NullStatement();
+        break;
+      }
+      $$ = new If($3,$5);
+    }
     | T_IF T_LPAREN expression T_RPAREN statement_or_block_of_statements T_ELSE statement_or_block_of_statements
+      {
+        if($3->type() != GPL::INT)
+        {
+          Error::error(Error::INVALID_TYPE_FOR_IF_STMT_EXPRESSION);
+          $$ = new NullStatement();
+          break;
+        }
+        $$ = new If($3,$5,$7);
+      }
 
 //---------------------------------------------------------------------
 for_statement:
     T_FOR T_LPAREN assign_statement_or_empty T_SEMIC expression T_SEMIC assign_statement_or_empty T_RPAREN statement_or_block_of_statements
+    {
+      if($5->type() != GPL::INT)
+      {
+        Error::error(Error::INVALID_TYPE_FOR_FOR_STMT_EXPRESSION);
+        $$ = new NullStatement();
+        break;
+      }
+      $$ = new For($5,$3,$7,$9);
+    }
 
 
 //---------------------------------------------------------------------
@@ -982,21 +1015,31 @@ print_statement:
       if($3->type() != GPL::INT && $3->type() != GPL::DOUBLE && $3->type() != GPL::STRING)
       {
         Error::error(Error::INVALID_TYPE_FOR_PRINT_STMT_EXPRESSION);
+        $$ = new NullStatement();
+        break;
       }
-      $$=new Print(line_count,$3);
-      $1=$1;
+      $$=new Print($1,$3);
     }
 
 
 //---------------------------------------------------------------------
 exit_statement:
     T_EXIT T_LPAREN expression T_RPAREN
+    {
+      if($3->type() != GPL::INT)
+      {
+        Error::error(Error::EXIT_STATUS_MUST_BE_AN_INTEGER, to_string($3->type()));
+        $$ = new NullStatement();
+        break;
+      }
+      $$ = new Exit($3, $1);
+    }
 
 
 //---------------------------------------------------------------------
 assign_statement_or_empty:
     assign_statement { $$=$1; }
-    | %empty {$$=nullptr;}
+    | %empty {$$=new NullStatement();}
 
 
 //---------------------------------------------------------------------
@@ -1005,14 +1048,26 @@ assign_statement:
     {
       if($1->type() != GPL::INT && $1->type() != GPL::DOUBLE && $1->type() != GPL::STRING)
       {
-        Error::error(Error::INVALID_LHS_OF_ASSIGNMENT, $1->get_name(), to_string($1->type()));
-        break;
+        try
+        {
+          std::string temp = $1->get_attribute();
+          Error::error(Error::INVALID_LHS_OF_ASSIGNMENT, $1->get_name()+"."+temp, to_string($1->type()));
+          $$ = new NullStatement();
+          break;
+        }
+        catch(...)
+        {
+          Error::error(Error::INVALID_LHS_OF_ASSIGNMENT, $1->get_name(), to_string($1->type()));
+          $$ = new NullStatement();
+          break;
+        }
       }
       if($1->type() == GPL::INT)
       {
         if($3->type() != GPL::INT)
         {
           Error::error(Error::ASSIGNMENT_TYPE_ERROR, to_string($1->type()), to_string($3->type()));
+          $$ = new NullStatement();
           break;
         }
       }
@@ -1021,6 +1076,7 @@ assign_statement:
         if($3->type() != GPL::INT && $3->type() != GPL::DOUBLE)
         {
           Error::error(Error::ASSIGNMENT_TYPE_ERROR, to_string($1->type()), to_string($3->type()));
+          $$ = new NullStatement();
           break;
         }
       }
@@ -1029,15 +1085,143 @@ assign_statement:
         if($3->type() != GPL::INT && $3->type() != GPL::DOUBLE && $3->type() != GPL::STRING)
         {
           Error::error(Error::ASSIGNMENT_TYPE_ERROR, to_string($1->type()), to_string($3->type()));
+          $$ = new NullStatement();
+          break;
+        }
+      }
+      const Expression* e = $1->get_arr_ind();
+      if(e != nullptr)
+      {
+        if(e->evaluate()->type() != GPL::INT)
+        {
+          Error::error(Error::ARRAY_INDEX_MUST_BE_AN_INTEGER, $1->get_name(), to_string(e->type()));
+          $$ = new NullStatement();
+          break;
+        }
+        else if($1->get_arr_count() == 0)
+        {
+          Error::error(Error::VARIABLE_NOT_AN_ARRAY, $1->get_name());
+          $$ = new NullStatement();
           break;
         }
       }
       $$ = new Assign($1,$3);
     }
-    | variable T_PLUS_ASSIGN expression    {$$=nullptr;}
-    | variable T_MINUS_ASSIGN expression   {$$=nullptr;}
-    | variable T_PLUS_PLUS                 {$$=nullptr;}
-    | variable T_MINUS_MINUS               {$$=nullptr;}
+    | variable T_PLUS_ASSIGN expression
+      {
+        if($1->type() != GPL::INT && $1->type() != GPL::DOUBLE && $1->type() != GPL::STRING)
+        {
+          Error::error(Error::INVALID_LHS_OF_PLUS_ASSIGNMENT, $1->get_name(), to_string($1->type()));
+          $$ = new NullStatement();
+          break;
+        }
+        if($1->type() == GPL::INT)
+        {
+          if($3->type() != GPL::INT)
+          {
+            Error::error(Error::PLUS_ASSIGNMENT_TYPE_ERROR, to_string($1->type()), to_string($3->type()));
+            $$ = new NullStatement();
+            break;
+          }
+        }
+        else if($1->type() == GPL::DOUBLE)
+        {
+          if($3->type() != GPL::INT && $3->type() != GPL::DOUBLE)
+          {
+            Error::error(Error::PLUS_ASSIGNMENT_TYPE_ERROR, to_string($1->type()), to_string($3->type()));
+            $$ = new NullStatement();
+            break;
+          }
+        }
+        else if($1->type() == GPL::STRING)
+        {
+          if($3->type() != GPL::INT && $3->type() != GPL::DOUBLE && $3->type() != GPL::STRING)
+          {
+            Error::error(Error::PLUS_ASSIGNMENT_TYPE_ERROR, to_string($1->type()), to_string($3->type()));
+            $$ = new NullStatement();
+            break;
+          }
+        }
+        $$ = new Plus_assign($1,$3);
+      }
+    | variable T_MINUS_ASSIGN expression
+      {
+        if($1->type() != GPL::INT && $1->type() != GPL::DOUBLE)
+        {
+          try
+          {
+            std::string temp = $1->get_attribute();
+            Error::error(Error::INVALID_LHS_OF_MINUS_ASSIGNMENT, $1->get_name()+"."+temp, to_string($1->type()));
+            $$ = new NullStatement();
+            break;
+          }
+          catch(...)
+          {
+            Error::error(Error::INVALID_LHS_OF_MINUS_ASSIGNMENT, $1->get_name(), to_string($1->type()));
+            $$ = new NullStatement();
+            break;
+          }
+        }
+        if($1->type() == GPL::INT)
+        {
+          if($3->type() != GPL::INT)
+          {
+            Error::error(Error::MINUS_ASSIGNMENT_TYPE_ERROR, to_string($1->type()), to_string($3->type()));
+            $$ = new NullStatement();
+            break;
+          }
+        }
+        else if($1->type() == GPL::DOUBLE)
+        {
+          if($3->type() != GPL::INT && $3->type() != GPL::DOUBLE)
+          {
+            Error::error(Error::MINUS_ASSIGNMENT_TYPE_ERROR, to_string($1->type()), to_string($3->type()));
+            $$ = new NullStatement();
+            break;
+          }
+        }
+        $$ = new Minus_assign($1,$3);
+      }
+    | variable T_PLUS_PLUS
+      {
+        if($1->type() != GPL::INT)
+        {
+          try
+          {
+            std::string temp = $1->get_attribute();
+            Error::error(Error::INVALID_LHS_OF_PLUS_PLUS, $1->get_name()+"."+temp, to_string($1->type()));
+            $$ = new NullStatement();
+            break;
+          }
+          catch(...)
+          {
+            Error::error(Error::INVALID_LHS_OF_PLUS_PLUS, $1->get_name(), to_string($1->type()));
+            $$ = new NullStatement();
+            break;
+          }
+        }
+        $$ = new Plus_plus($1);
+      }
+    | variable T_MINUS_MINUS
+      {
+        if($1->type() != GPL::INT)
+        {
+          try
+          {
+            std::string temp = $1->get_attribute();
+            Error::error(Error::INVALID_LHS_OF_MINUS_MINUS, $1->get_name()+"."+temp, to_string($1->type()));
+            $$ = new NullStatement();
+            break;
+          }
+          catch(...)
+          {
+            Error::error(Error::INVALID_LHS_OF_MINUS_MINUS, $1->get_name(), to_string($1->type()));
+            $$ = new NullStatement();
+            break;
+          }
+        }
+        $$ = new Minus_minus($1);
+      }
 
 
 //---------------------------------------------------------------------
@@ -1101,19 +1285,8 @@ variable:
 
         if($3->type() != GPL::INT)
         {
-
           create=true;
-          try{
-            const Constant* c = $3->evaluate();
-            if(c == nullptr)
-              throw(1);
-            if(c->as_int() != 0)
-              throw(1);
-          }
-          catch(...){
-            Error::error(Error::ARRAY_INDEX_MUST_BE_AN_INTEGER, *$1, to_string($3->type()));
-          }
-
+          Error::error(Error::ARRAY_INDEX_MUST_BE_AN_INTEGER, *$1, to_string($3->type()));
         }
         if(sym->get_type() < 32)
         {

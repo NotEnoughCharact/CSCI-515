@@ -5,7 +5,7 @@
 
 Print::~Print()
 {
-
+  delete argument;
 }
 
 void Print::execute() const

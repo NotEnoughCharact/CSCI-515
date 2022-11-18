@@ -96,11 +96,13 @@ const std::shared_ptr<Locator> Member_variable::modify() const
   if (array_index_expression != nullptr && (array_index_expression->evaluate()->as_int() >= temp->get_count() || array_index_expression->evaluate()->as_int() < 0))
   {
     Error::error(Error::ARRAY_INDEX_OUT_OF_BOUNDS, temp->get_name(), array_index_expression->evaluate()->as_string());
-    return std::make_shared<Integer_locator>(i_temp);
   }
   if(array_index_expression != nullptr)
   {
-    return temp->as_lvalue(array_index_expression->evaluate()->as_int(), attribute);
+    if(array_index_expression->evaluate()->as_int() >= 0 && array_index_expression->evaluate()->as_int() < temp->get_count())
+      return temp->as_lvalue(array_index_expression->evaluate()->as_int(), attribute);
+    else
+      return temp->as_lvalue(0, attribute);
   }
   else
   {
