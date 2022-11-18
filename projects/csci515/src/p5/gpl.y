@@ -267,6 +267,7 @@ variable_declaration:
         switch($1)
         {
           case GPL::INT:
+
             try
             {
               if(GPL::INT != $3->type())
@@ -462,8 +463,8 @@ object_declaration:
         try
         {
           const Constant* c = temp->value->evaluate();
-          GPL::Type exp_type = c->type();
           GPL::Type att_type = circ_ptr->attribute_type(temp->name);
+          GPL::Type exp_type = c->type();
           exists = true;
           if(att_type == GPL::INT && exp_type == GPL::INT)
           {
@@ -508,8 +509,8 @@ object_declaration:
         try
         {
           const Constant* c = temp->value->evaluate();
-          GPL::Type exp_type = c->type();
           GPL::Type att_type = pix_ptr->attribute_type(temp->name);
+          GPL::Type exp_type = c->type();
           exists = true;
           if(att_type == GPL::INT && exp_type == GPL::INT)
           {
@@ -554,8 +555,8 @@ object_declaration:
         try
         {
           const Constant* c = temp->value->evaluate();
-          GPL::Type exp_type = c->type();
           GPL::Type att_type = rect_ptr->attribute_type(temp->name);
+          GPL::Type exp_type = c->type();
           exists = true;
           if(att_type == GPL::INT && exp_type == GPL::INT)
           {
@@ -600,8 +601,8 @@ object_declaration:
         try
         {
           const Constant* c = temp->value->evaluate();
-          GPL::Type exp_type = c->type();
           GPL::Type att_type = text_ptr->attribute_type(temp->name);
+          GPL::Type exp_type = c->type();
           exists = true;
           if(att_type == GPL::INT && exp_type == GPL::INT)
           {
@@ -645,8 +646,8 @@ object_declaration:
         try
         {
           const Constant* c = temp->value->evaluate();
-          GPL::Type exp_type = c->type();
           GPL::Type att_type = tri_ptr->attribute_type(temp->name);
+          GPL::Type exp_type = c->type();
           exists = true;
           if(att_type == GPL::INT && exp_type == GPL::INT)
           {
@@ -1286,7 +1287,16 @@ variable:
         if($3->type() != GPL::INT)
         {
           create=true;
-          Error::error(Error::ARRAY_INDEX_MUST_BE_AN_INTEGER, *$1, to_string($3->type()));
+          try{
+            const Constant* c = $3->evaluate();
+            if(c == nullptr)
+              throw(1);
+            if(c->as_int() != 0)
+              throw(1);
+          }
+          catch(...){
+            Error::error(Error::ARRAY_INDEX_MUST_BE_AN_INTEGER, *$1, to_string($3->type()));
+          }
         }
         if(sym->get_type() < 32)
         {
@@ -1375,7 +1385,22 @@ expression:
     | expression T_GREATER  expression {$$=new Greater($1,$3);}
     | expression T_EQUAL expression {$$=new Equal($1,$3);}
     | expression T_NOT_EQUAL expression {$$=new Not_Equal($1,$3);}
-    | expression T_PLUS expression { $$=new Plus($1, $3);}
+    | expression T_PLUS expression
+      {
+        if($1->type() != GPL::INT && $1->type() != GPL::DOUBLE && $1->type() != GPL::STRING)
+        {
+          Error::error(Error::INVALID_LEFT_OPERAND_TYPE, "+");
+          $$=new Integer_constant(0);
+          break;
+        }
+        if($3->type() != GPL::INT && $3->type() != GPL::DOUBLE && $3->type() != GPL::STRING)
+        {
+          Error::error(Error::INVALID_RIGHT_OPERAND_TYPE, "+");
+          $$=new Integer_constant(0);
+          break;
+        }
+        $$=new Plus($1, $3);
+      }
     | expression T_MINUS expression
       {
         bool has_string = false;
