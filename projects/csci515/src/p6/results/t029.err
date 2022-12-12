@@ -1,0 +1,1 @@
+Semantic error on line 16: LHS of assignment must be (INT || DOUBLE || STRING || ANIMATION_BLOCK).  Variable 'my_circle.animation_block' is of type 'animation_block'.

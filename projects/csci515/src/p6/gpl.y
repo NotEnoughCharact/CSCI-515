@@ -204,6 +204,7 @@ struct Parameter {
 %type <union_statement_ptr> exit_statement;
 %type <union_keystroke> keystroke;
 %type <union_gpl_type> animation_parameter;
+%type <union_string> animation_declaration;
 
 
 %left T_OR
@@ -233,8 +234,13 @@ program:
     declaration_list block_list
     {
       Scope_manager& scopeman=Scope_manager::instance();
-      std::set<std::string> result;
-    	std::set_difference(Animation_code::declared_blocklist.begin(),Animation_code::declared_blocklist.end(),Animation_code::defined_blocklist.begin(),Animation_code::defined_blocklist.begin(),std::inserter(result,result.end()));
+      std::vector<std::string> result;
+      std::set_difference(Animation_code::used_blocklist.begin(),Animation_code::used_blocklist.end(),Animation_code::defined_blocklist.begin(),Animation_code::defined_blocklist.end(),std::inserter(result,result.end()));
+      for(auto x: result)
+    	{
+    		Error::error(Error::NO_BODY_PROVIDED_FOR_FORWARD,x);
+    	}
+    	std::set_difference(Animation_code::declared_blocklist.begin(),Animation_code::declared_blocklist.end(),Animation_code::defined_blocklist.begin(),Animation_code::defined_blocklist.end(),std::inserter(result,result.end()));
     	for(auto x: result)
     	{
     		scopeman.erase(x);
@@ -491,6 +497,16 @@ object_declaration:
           {
             circ_ptr->write_attribute(temp->name, c->as_string());
           }
+          else if(att_type == GPL::ANIMATION_BLOCK)
+          {
+            const Animation_code* anim_block=c->as_animation_block();
+            if(anim_block->get_parameter_type() != GPL::CIRCLE)
+            {
+              Error::error(Error::GAME_OBJECT_ANIMATION_BLOCK_PARAMETER_TYPE_ERROR, to_string(GPL::CIRCLE), to_string(anim_block->get_parameter_type()));
+            }
+            Animation_code::used_blocklist.insert(anim_block->get_block_name());
+            circ_ptr->write_attribute(temp->name, anim_block);
+          }
           else
           {
             throw 1;
@@ -536,6 +552,16 @@ object_declaration:
           else if(att_type == GPL::STRING)
           {
             pix_ptr->write_attribute(temp->name, c->as_string());
+          }
+          else if(att_type == GPL::ANIMATION_BLOCK)
+          {
+            const Animation_code* anim_block=c->as_animation_block();
+            if(anim_block->get_parameter_type() != GPL::CIRCLE)
+            {
+              Error::error(Error::GAME_OBJECT_ANIMATION_BLOCK_PARAMETER_TYPE_ERROR, to_string(GPL::CIRCLE), to_string(anim_block->get_parameter_type()));
+            }
+            Animation_code::used_blocklist.insert(anim_block->get_block_name());
+            pix_ptr->write_attribute(temp->name, anim_block);
           }
           else
           {
@@ -583,6 +609,16 @@ object_declaration:
           {
             rect_ptr->write_attribute(temp->name, c->as_string());
           }
+          else if(att_type == GPL::ANIMATION_BLOCK)
+          {
+            const Animation_code* anim_block=c->as_animation_block();
+            if(anim_block->get_parameter_type() != GPL::RECTANGLE)
+            {
+              Error::error(Error::GAME_OBJECT_ANIMATION_BLOCK_PARAMETER_TYPE_ERROR, to_string(GPL::RECTANGLE), to_string(anim_block->get_parameter_type()));
+            }
+            Animation_code::used_blocklist.insert(anim_block->get_block_name());
+            rect_ptr->write_attribute(temp->name, anim_block);
+          }
           else
           {
             throw 1;
@@ -629,6 +665,16 @@ object_declaration:
           {
             text_ptr->write_attribute(temp->name, c->as_string());
           }
+          else if(att_type == GPL::ANIMATION_BLOCK)
+          {
+            const Animation_code* anim_block=c->as_animation_block();
+            if(anim_block->get_parameter_type() != GPL::TEXTBOX)
+            {
+              Error::error(Error::GAME_OBJECT_ANIMATION_BLOCK_PARAMETER_TYPE_ERROR, to_string(GPL::TEXTBOX), to_string(anim_block->get_parameter_type()));
+            }
+            Animation_code::used_blocklist.insert(anim_block->get_block_name());
+            text_ptr->write_attribute(temp->name, anim_block);
+          }
           else
           {
             throw 1;
@@ -673,6 +719,16 @@ object_declaration:
           else if(att_type == GPL::STRING)
           {
             tri_ptr->write_attribute(temp->name, c->as_string());
+          }
+          else if(att_type == GPL::ANIMATION_BLOCK)
+          {
+            const Animation_code* anim_block=c->as_animation_block();
+            if(anim_block->get_parameter_type() != GPL::TRIANGLE)
+            {
+              Error::error(Error::GAME_OBJECT_ANIMATION_BLOCK_PARAMETER_TYPE_ERROR, to_string(GPL::TRIANGLE), to_string(anim_block->get_parameter_type()));
+            }
+            Animation_code::used_blocklist.insert(anim_block->get_block_name());
+            tri_ptr->write_attribute(temp->name, anim_block);
           }
           else
           {
@@ -860,11 +916,123 @@ animation_parameter:
 //---------------------------------------------------------------------
 animation_block:
     animation_declaration statement_block
+    {
+      Scope_manager& scopeman=Scope_manager::instance();
+      scopeman.pop_table();
+      std::shared_ptr<Symbol> sym;
+      if($1 != nullptr)
+      {
+        sym = scopeman.lookup(*$1);
+        Animation_code* a = const_cast<Animation_code*>(sym->as_constant()->as_animation_block());
+        a->set_block($2);
+        a->defined_blocklist.insert(*$1);
+      }
+    }
 
 
 //---------------------------------------------------------------------
 animation_declaration:
-    T_ANIMATION T_ID T_LPAREN object_type T_ID T_RPAREN {$2=$2; $5=$5;}
+    T_ANIMATION T_ID T_LPAREN object_type T_ID T_RPAREN
+    {
+      Scope_manager& scopeman=Scope_manager::instance();
+      Animation_code* a;
+      if(!scopeman.defined_in_current_scope(*$2))
+      {
+        Animation_code* a = new Animation_code(*$2, $4);
+        scopeman.add_to_current_scope(std::make_shared<Symbol>(*$2, a));//this might be wrong
+      }
+      std::shared_ptr<Symbol> sym = scopeman.lookup(*$2);
+      if(sym->get_type() != GPL::ANIMATION_CODE)
+      {
+        Error::error(Error::REDECLARATION_OF_SYMBOL_AS_ANIMATION_BLOCK,sym->get_name());
+        scopeman.push_table();
+        $$=nullptr;
+        if($4 == GPL::CIRCLE)
+        {
+          Circle* c = new Circle();
+          scopeman.add_to_current_scope(std::make_shared<Symbol>(*$5,c));
+        }
+        if($4 == GPL::PIXMAP)
+        {
+          Pixmap* p = new Pixmap();
+          scopeman.add_to_current_scope(std::make_shared<Symbol>(*$5,p));
+        }
+        if($4 == GPL::RECTANGLE)
+        {
+          Rectangle* r = new Rectangle();
+          scopeman.add_to_current_scope(std::make_shared<Symbol>(*$5,r));
+        }
+        if($4 == GPL::TEXTBOX)
+        {
+          Textbox* t = new Textbox();
+          scopeman.add_to_current_scope(std::make_shared<Symbol>(*$5,t));
+        }
+        if($4 == GPL::TRIANGLE)
+        {
+          Triangle* t = new Triangle();
+          scopeman.add_to_current_scope(std::make_shared<Symbol>(*$5,t));
+        }
+
+        break;
+      }
+      a = const_cast<Animation_code*>(sym->as_constant()->as_animation_block());
+      if(sym->get_type() == GPL::ANIMATION_CODE)
+      {
+        sym->as_lvalue()->mutate(*$5);
+      }
+      scopeman.push_table();
+      if($4 == GPL::CIRCLE)
+      {
+        if(a->get_parameter_type() != GPL::CIRCLE)
+        {
+          Error::error(Error::ANIMATION_PARAM_DOES_NOT_MATCH_FORWARD,to_string(GPL::CIRCLE),to_string(a->get_parameter_type()));
+          $$=nullptr;
+        }
+        Circle* c = new Circle();
+        scopeman.add_to_current_scope(std::make_shared<Symbol>(*$5,c));
+      }
+      else if($4 == GPL::PIXMAP)
+      {
+        if(a->get_parameter_type() != GPL::PIXMAP)
+        {
+          Error::error(Error::ANIMATION_PARAM_DOES_NOT_MATCH_FORWARD,to_string(GPL::PIXMAP),to_string(a->get_parameter_type()));
+          $$=nullptr;
+        }
+        Pixmap* p = new Pixmap();
+        scopeman.add_to_current_scope(std::make_shared<Symbol>(*$5,p));
+      }
+      else if($4 == GPL::RECTANGLE)
+      {
+        if(a->get_parameter_type() != GPL::RECTANGLE)
+        {
+          Error::error(Error::ANIMATION_PARAM_DOES_NOT_MATCH_FORWARD,to_string(GPL::RECTANGLE),to_string(a->get_parameter_type()));
+          $$=nullptr;
+        }
+        Rectangle* r = new Rectangle();
+        scopeman.add_to_current_scope(std::make_shared<Symbol>(*$5,r));
+      }
+      else if($4 == GPL::TEXTBOX)
+      {
+        if(a->get_parameter_type() != GPL::TEXTBOX)
+        {
+          Error::error(Error::ANIMATION_PARAM_DOES_NOT_MATCH_FORWARD,to_string(GPL::TEXTBOX),to_string(a->get_parameter_type()));
+          $$=nullptr;
+        }
+        Textbox* t = new Textbox();
+        scopeman.add_to_current_scope(std::make_shared<Symbol>(*$5,t));
+      }
+      else if($4 == GPL::TRIANGLE)
+      {
+        if(a->get_parameter_type() != GPL::TRIANGLE)
+        {
+          Error::error(Error::ANIMATION_PARAM_DOES_NOT_MATCH_FORWARD,to_string(GPL::TRIANGLE),to_string(a->get_parameter_type()));
+          $$=nullptr;
+        }
+        Triangle* t = new Triangle();
+        scopeman.add_to_current_scope(std::make_shared<Symbol>(*$5,t));
+      }
+      $$=$2;
+    }
 
 
 //---------------------------------------------------------------------
@@ -1079,7 +1247,7 @@ assign_statement_or_empty:
 assign_statement:
     variable T_ASSIGN expression
     {
-      if($1->type() != GPL::INT && $1->type() != GPL::DOUBLE && $1->type() != GPL::STRING)
+      if($1->type() != GPL::INT && $1->type() != GPL::DOUBLE && $1->type() != GPL::STRING && $1->type() != GPL::ANIMATION_BLOCK)
       {
         try
         {
@@ -1115,8 +1283,9 @@ assign_statement:
       }
       else if($1->type() == GPL::STRING)
       {
-        if($3->type() != GPL::INT && $3->type() != GPL::DOUBLE && $3->type() != GPL::STRING)
+        if($3->type() != GPL::INT && $3->type() != GPL::DOUBLE && $3->type() != GPL::STRING && $3->type())
         {
+          std::cerr << "this\n";
           Error::error(Error::ASSIGNMENT_TYPE_ERROR, to_string($1->type()), to_string($3->type()));
           $$ = new NullStatement();
           break;

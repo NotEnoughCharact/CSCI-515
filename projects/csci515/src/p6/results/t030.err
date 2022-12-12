@@ -1,0 +1,1 @@
+Semantic error on line 11: LHS of assignment must be (INT || DOUBLE || STRING || ANIMATION_BLOCK).  Variable 'windowsill.animation_block' is of type 'animation_block'.

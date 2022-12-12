@@ -2,13 +2,17 @@
 #include "Scope_manager.h"
 #include "Animation_code.h"
 #include "Statement.h"
+#include "Reference.h"
 
 std::set<std::string> Animation_code::defined_blocklist;
 std::set<std::string> Animation_code::declared_blocklist;
 std::set<std::string> Animation_code::used_blocklist;
 
-Animation_code::Animation_code(const std::string& block_name, GPL::Type parameter_type) 
-  :block_name(block_name), parameter_type(parameter_type), block(new NullStatement) 
+Animation_code::Animation_code()
+  :block_name(""), parameter_type(GPL::ANIMATION_CODE), block(new NullStatement){}
+
+Animation_code::Animation_code(const std::string& block_name, GPL::Type parameter_type)
+  :block_name(block_name), parameter_type(parameter_type), block(new NullStatement)
 {}
 void Animation_code::set_block(const Statement* blk) //in animation_block:
 { delete block; block=blk; }
@@ -25,5 +29,9 @@ void Animation_code::set_parameter_name(const std::string& pname)//in animation_
 
 void Animation_code::execute(Game_object* argument) const
 {
-  //Implemented in P6
+  Scope_manager& scopeman=Scope_manager::instance();
+  scopeman.push_table();
+  scopeman.add_to_current_scope(std::make_shared<Reference>(parameter_name, parameter_type, argument));
+  block->execute();
+  scopeman.pop_table();
 }

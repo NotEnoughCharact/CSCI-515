@@ -10,6 +10,7 @@ class Statement;
 class Animation_code {
   public:
     //ctor called in the forward declaration production
+    Animation_code();
     Animation_code(const std::string& block_name, GPL::Type parameter_type);
     void set_parameter_name(const std::string& pname);
     void set_block(const Statement* blk);

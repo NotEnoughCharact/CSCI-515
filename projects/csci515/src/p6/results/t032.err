@@ -1,0 +1,2 @@
+Semantic error on line 30: LHS of assignment must be (INT || DOUBLE || STRING || ANIMATION_BLOCK).  Variable 'priest_anime.animation_block' is of type 'animation_block'.
+Semantic error on line 31: LHS of assignment must be (INT || DOUBLE || STRING || ANIMATION_BLOCK).  Variable 'priestess_anime.animation_block' is of type 'animation_block'.

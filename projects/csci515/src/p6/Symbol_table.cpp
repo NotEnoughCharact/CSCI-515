@@ -38,6 +38,7 @@ std::ostream& operator<<(std::ostream& os, const Symbol_table& symtab)
     names.push_back(i.first);
   }
   std::sort(names.begin(),names.end(), [](std::string a, std::string b) {return a<b;});
+  //std::cerr << (int)names.size() << "this\n";
   for(int i = 0; i < (int)names.size(); i++)
   {
     os << *symtab.symbols.at(names[i]) << "\n";

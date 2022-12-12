@@ -34,6 +34,23 @@ void Assign::execute() const
   {
     left->mutate(c->as_string());
   }
+  else if(left->type() == GPL::ANIMATION_BLOCK && (c->type() == GPL::ANIMATION_CODE || c->type() == GPL::ANIMATION_BLOCK))
+  {
+    const Animation_code* anim_block=c->as_animation_block();
+    if(rhs->type() == GPL::ANIMATION_CODE)
+    {
+      Animation_code::used_blocklist.insert(anim_block->get_block_name());
+      left->mutate(anim_block->get_block_name());
+    }
+    else
+    {
+      left->mutate(anim_block);
+    }
+  }
+  else if(left->type() == GPL::ANIMATION_CODE)
+  {
+    Error::error(Error::CANNOT_ASSIGN_TO_ANIMATION_CODE);
+  }
   else
     throw left->type();
   if(next!=nullptr) next->execute();

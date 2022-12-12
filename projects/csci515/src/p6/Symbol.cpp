@@ -25,6 +25,7 @@ Symbol::Symbol(const std::string& name, Triangle* value) : name(name), value(val
 Symbol::Symbol(const std::string& name, Triangle* value, int count) : name(name), value(value), count(count){type = GPL::TRIANGLE;}
 
 Symbol::Symbol(const std::string& name, Animation_code* value) : name(name), value(value){count = 0; type = GPL::ANIMATION_CODE;}
+Symbol::Symbol(const std::string& name, GPL::Type type, Game_object* argument) : name(name), value(argument), type(type){count = 0;}
 
 Symbol::~Symbol()
 {
@@ -63,7 +64,6 @@ Symbol::~Symbol()
 
 std::ostream& operator<<(std::ostream& os, const Symbol& sym)
 {
-
   int num = sym.type;
   if(sym.count > 0)
   {
@@ -150,7 +150,7 @@ std::ostream& operator<<(std::ostream& os, const Symbol& sym)
     }
     else if(num == GPL::ANIMATION_CODE)
     {
-      os << "animation code " << sym.name;
+      //os << "animation code " << sym.name;
     }
   }
 
@@ -192,7 +192,7 @@ const Constant* Symbol::as_constant() const
   {
     return new Game_object_constant(value.pixmap_pointer);
   }
-  else if(num == GPL::ANIMATION_BLOCK)
+  else if(num == GPL::ANIMATION_CODE)
   {
     return new Animation_block_constant(value.a_code_pointer);
   }
@@ -309,6 +309,10 @@ std::shared_ptr<Locator> Symbol::as_lvalue() const
   else if(num == GPL::STRING)
   {
     return std::make_shared<String_locator>(*value.string_pointer);
+  }
+  else if(num == GPL::ANIMATION_CODE)
+  {
+    return std::make_shared<Animation_code_locator>(value.a_code_pointer);
   }
   return nullptr;
 }

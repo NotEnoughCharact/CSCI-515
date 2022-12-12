@@ -11,6 +11,7 @@
 #include "Triangle.h"
 #include "Locator.h"
 #include "Animation_code.h"
+#include "Game_object.h"
 
 
 
@@ -24,6 +25,7 @@ union symbol_type {
   Textbox* textbox_pointer;
   Triangle* triangle_pointer;
   Animation_code* a_code_pointer;
+  Game_object* game_object_pointer;
 
   symbol_type(double* val) : double_pointer(val){}
   symbol_type(int* val) : int_pointer(val){}
@@ -34,17 +36,24 @@ union symbol_type {
   symbol_type(Textbox* val) : textbox_pointer(val){}
   symbol_type(Triangle* val) : triangle_pointer(val){}
   symbol_type(Animation_code* val) : a_code_pointer(val){}
+  symbol_type(Game_object* val) : game_object_pointer(val){}
 };
 
 
 
 
 class Symbol{
+
+
+
 private:
   std::string name;
+protected:
   symbol_type value;
+private:
   GPL::Type type;
   int count;
+
 
 public:
   Symbol(const std::string& name, double* value);
@@ -67,6 +76,13 @@ public:
 
   Symbol(const std::string& name, Animation_code* value);
 
+protected:
+  Symbol(const std::string& name, GPL::Type type, Game_object* value);
+
+public:
+
+
+
   const Constant* as_constant() const;          //Symbol value is not an array
   const Constant* as_constant(int index) const; //Symbol value is an array
   const Constant* as_constant(           const std::string& attribute_name) const; // non-arrays
@@ -86,6 +102,9 @@ public:
   //prevent compiler from generating these functions
   Symbol(const Symbol&) = delete;
   Symbol& operator=(const Symbol&) = delete;
+
+
+
 };
 
 #endif
