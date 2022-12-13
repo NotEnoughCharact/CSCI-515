@@ -240,6 +240,7 @@ program:
     	{
     		Error::error(Error::NO_BODY_PROVIDED_FOR_FORWARD,x);
     	}
+      result.clear();
     	std::set_difference(Animation_code::declared_blocklist.begin(),Animation_code::declared_blocklist.end(),Animation_code::defined_blocklist.begin(),Animation_code::defined_blocklist.end(),std::inserter(result,result.end()));
     	for(auto x: result)
     	{
@@ -986,7 +987,7 @@ animation_declaration:
         if(a->get_parameter_type() != GPL::CIRCLE)
         {
           Error::error(Error::ANIMATION_PARAM_DOES_NOT_MATCH_FORWARD,to_string(GPL::CIRCLE),to_string(a->get_parameter_type()));
-          $$=nullptr;
+
         }
         Circle* c = new Circle();
         scopeman.add_to_current_scope(std::make_shared<Symbol>(*$5,c));
@@ -996,7 +997,7 @@ animation_declaration:
         if(a->get_parameter_type() != GPL::PIXMAP)
         {
           Error::error(Error::ANIMATION_PARAM_DOES_NOT_MATCH_FORWARD,to_string(GPL::PIXMAP),to_string(a->get_parameter_type()));
-          $$=nullptr;
+
         }
         Pixmap* p = new Pixmap();
         scopeman.add_to_current_scope(std::make_shared<Symbol>(*$5,p));
@@ -1006,7 +1007,7 @@ animation_declaration:
         if(a->get_parameter_type() != GPL::RECTANGLE)
         {
           Error::error(Error::ANIMATION_PARAM_DOES_NOT_MATCH_FORWARD,to_string(GPL::RECTANGLE),to_string(a->get_parameter_type()));
-          $$=nullptr;
+
         }
         Rectangle* r = new Rectangle();
         scopeman.add_to_current_scope(std::make_shared<Symbol>(*$5,r));
@@ -1016,7 +1017,7 @@ animation_declaration:
         if(a->get_parameter_type() != GPL::TEXTBOX)
         {
           Error::error(Error::ANIMATION_PARAM_DOES_NOT_MATCH_FORWARD,to_string(GPL::TEXTBOX),to_string(a->get_parameter_type()));
-          $$=nullptr;
+
         }
         Textbox* t = new Textbox();
         scopeman.add_to_current_scope(std::make_shared<Symbol>(*$5,t));
@@ -1026,12 +1027,13 @@ animation_declaration:
         if(a->get_parameter_type() != GPL::TRIANGLE)
         {
           Error::error(Error::ANIMATION_PARAM_DOES_NOT_MATCH_FORWARD,to_string(GPL::TRIANGLE),to_string(a->get_parameter_type()));
-          $$=nullptr;
+
         }
         Triangle* t = new Triangle();
         scopeman.add_to_current_scope(std::make_shared<Symbol>(*$5,t));
       }
       $$=$2;
+
     }
 
 
@@ -1247,7 +1249,13 @@ assign_statement_or_empty:
 assign_statement:
     variable T_ASSIGN expression
     {
-      if($1->type() != GPL::INT && $1->type() != GPL::DOUBLE && $1->type() != GPL::STRING && $1->type() != GPL::ANIMATION_BLOCK)
+      if($1->type() == GPL::ANIMATION_CODE)
+      {
+        Error::error(Error::CANNOT_ASSIGN_TO_ANIMATION_CODE, $1->get_name());
+        $$ = new NullStatement();
+        break;
+      }
+      else if($1->type() != GPL::INT && $1->type() != GPL::DOUBLE && $1->type() != GPL::STRING && $1->type() != GPL::ANIMATION_BLOCK)
       {
         try
         {
@@ -1285,11 +1293,26 @@ assign_statement:
       {
         if($3->type() != GPL::INT && $3->type() != GPL::DOUBLE && $3->type() != GPL::STRING && $3->type())
         {
-          std::cerr << "this\n";
           Error::error(Error::ASSIGNMENT_TYPE_ERROR, to_string($1->type()), to_string($3->type()));
           $$ = new NullStatement();
           break;
         }
+      }
+      else if($1->type() == GPL::ANIMATION_BLOCK)
+      {
+        if($3->type() != GPL::ANIMATION_BLOCK && $3->type() != GPL::ANIMATION_CODE)
+        {
+          Error::error(Error::ASSIGNMENT_TYPE_ERROR, to_string($1->type()), to_string($3->type()));
+          $$ = new NullStatement();
+        }
+        if($3->type() == GPL::ANIMATION_CODE)
+        {
+          if($1->evaluate()->as_animation_block()->get_parameter_type() != $3->evaluate()->as_animation_block()->get_parameter_type())
+          {
+            Error::error(Error::ANIMATION_BLOCK_ASSIGNMENT_PARAMETER_TYPE_ERROR, to_string($1->evaluate()->as_animation_block()->get_parameter_type()), to_string($3->evaluate()->as_animation_block()->get_parameter_type()));
+          }
+        }
+        //Animation_code::used_blocklist.insert($3->evaluate()->as_animation_block()->get_block_name());
       }
       const Expression* e = $1->get_arr_ind();
       if(e != nullptr)

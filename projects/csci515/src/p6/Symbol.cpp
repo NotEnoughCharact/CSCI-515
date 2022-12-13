@@ -148,10 +148,6 @@ std::ostream& operator<<(std::ostream& os, const Symbol& sym)
     {
       os << *sym.value.pixmap_pointer;
     }
-    else if(num == GPL::ANIMATION_CODE)
-    {
-      //os << "animation code " << sym.name;
-    }
   }
 
   return os;

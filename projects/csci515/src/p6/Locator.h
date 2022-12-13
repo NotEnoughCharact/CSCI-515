@@ -67,7 +67,7 @@ class Animation_code_locator : public Locator {
     Animation_code* a_code;
   public:
     Animation_code_locator(Animation_code* a)
-      : Locator(GPL::ANIMATION_BLOCK), a_code(a) {}
+      : Locator(GPL::ANIMATION_CODE), a_code(a) {}
     virtual void mutate(const std::string& val);
     virtual void mutate(const Statement* val);
 };
